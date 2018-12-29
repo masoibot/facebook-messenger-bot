@@ -89,4 +89,4 @@ bot.on('message', (payload, chat, data) => {
     }
 });
 
-bot.start();
+bot.start(process.env.PORT || 3000);
