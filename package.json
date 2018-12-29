@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@pusher/chatkit-client": "^1.2.2",
+    "bootbot": "^1.0.16",
+    "jsdom": "^13.1.0",
+    "localtunnel": "^1.9.1"
+  },
+  "name": "masoi-messenger-bot",
+  "version": "1.0.0",
+  "description": "Messenger bot for Quan Tro Ma Soi Bot",
+  "main": "index.js",
+  "author": "Pham Ngoc Duy",
+  "license": "MIT"
+}
