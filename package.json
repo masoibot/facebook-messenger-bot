@@ -5,6 +5,9 @@
     "jsdom": "^13.1.0",
     "localtunnel": "^1.9.1"
   },
+  "scripts": {
+    "start": "node index.js"
+  },
   "name": "masoi-messenger-bot",
   "version": "1.0.0",
   "description": "Messenger bot for Quan Tro Ma Soi Bot",
