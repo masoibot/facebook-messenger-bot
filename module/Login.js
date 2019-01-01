@@ -22,7 +22,7 @@ module.exports = (userInstance, bot) => {
                             onMessage: message => {
                                 if (message.text[0] === '{') {
                                     // data from server
-                                    goStage(chat, JSON.parse(message.text), userID);
+                                    goStage(chat, JSON.parse(message.text).data, userID);
                                 } else {
                                     // chat from other
                                     if (message.sender.id !== currentUser.id) {

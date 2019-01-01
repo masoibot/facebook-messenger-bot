@@ -30,19 +30,19 @@ function voteConvo(chat, askSeq) {
         startConvo(convo, askSeq[0], 0, askSeq)
     });
 }
-function doActionConvo(chat, convo, userRole, playerList, actionCallback, askText, successCallback = () => { }) {
+function doActionConvo(chat, convo, userID, userRole, playerList, actionCallback, askText, successCallback = () => { }) {
     convo.ask({
         text: askText,
         quickReplies: playerList,
     }, (payload, convo) => {
-        let result = payload.message ? actionCallback(payload.message.text) : null;
+        let result = payload.message ? actionCallback(payload.message.text, userID) : null;
         if (result != null) {
             convo.say(`=>${result}`).then(() => {
                 convo.end();
                 successCallback();
             })
         } else {
-            doActionConvo(chat, convo, userRole, playerList, actionCallback, `Vui lòng thử lại!\n${askText}`);
+            doActionConvo(chat, convo, userID, userRole, playerList, actionCallback, `Vui lòng thử lại!\n${askText}`);
             convo.end();
         }
     });
@@ -50,7 +50,7 @@ function doActionConvo(chat, convo, userRole, playerList, actionCallback, askTex
 function doNightRole(chat, userRole, playerList) {
     if (userRole == 1) { // là tiên tri
         chat.conversation(convo => {
-            doActionConvo(chat, convo, userRole, playerList, sendSee, `Tiên tri muốn soi ai?`);
+            doActionConvo(chat, convo, userID, userRole, playerList, sendSee, `Tiên tri muốn soi ai?`);
         })
     } else if (userRole == -1 || userRole == -3) {// là SÓI / SÓI NGUYỀN
         chat.say({
@@ -102,7 +102,7 @@ function doNightRole(chat, userRole, playerList) {
 function mainNightRole(chat, gameData, userID, userRole, playerList) {
     if (gameData.roleAction.superWolfVictimID == userID) { // kẻ bị sói nguyền
         chat.conversation(convo => {
-            doActionConvo(chat, convo, userRole, playerList, sendVote, `Sói muốn cắn ai?`, () => {
+            doActionConvo(chat, convo, userID, userRole, playerList, sendVote, `Sói muốn cắn ai?`, () => {
                 doNightRole(chat, userRole, playerList);
             });
         })
