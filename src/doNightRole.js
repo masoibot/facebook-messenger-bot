@@ -1,4 +1,4 @@
-const { sendVote, sendSee, sendFire } = require('./sendRole')
+const { sendVote, sendSee, sendFire, sendCupid } = require('./sendRole')
 
 function startConvo(convo, askItem, index, askSeq) {
     convo.ask(askItem.qreply ? {
@@ -113,7 +113,7 @@ function mainNightRole(chat, gameData, userID, userRole, playerList) {
 
 function doCupidRole(chat, gameData, playerList) {
     voteConvo(chat, [{
-        txt: "Chọn người thứ nhất:",
+        txt: "GHÉP ĐÔI: Chọn người thứ nhất:",
         qreply: playerList,
         callback: (convo, index, resTxt) => {
             if (/[0-9]+:.+/g.test(resTxt)) {
@@ -123,17 +123,14 @@ function doCupidRole(chat, gameData, playerList) {
             }
         }
     }, {
-        txt: "Chọn người thứ hai:",
+        txt: "GHÉP ĐÔI: Chọn người thứ hai:",
         qreply: playerList,
         callback: (convo, index, resTxt) => {
             let user1ID = convo.get(`data[${index - 1}]`);
-            if (!user1ID) {
-                return null;
-            }
-            let user2ID;
+            if (!user1ID) return null;
             if (/[0-9]+:.+/g.test(resTxt)) {
-                user2ID = resTxt.match(/[0-9]+/g)[0];
-                console.log(`CUPID: ${user1ID}, ${user2ID}`);
+                let user2ID = resTxt.match(/[0-9]+/g)[0];
+                sendCupid(user1ID, user2ID)
                 return true;
             } else {
                 return null;
