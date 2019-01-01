@@ -24,16 +24,16 @@ bot.on('message', (payload, chat, data) => {
     if (data.captured) { return; }
     const joinID = payload.sender.id;
     const text = payload.message.text;
-    if (!userInstance[joinID]) {
+    if (!userInstance.getInstance(joinID)) {
         chat.say(`Vui lòng đăng nhập lại!`);
     } else {
         if (/[0-9]+:.+|-1/g.test(text)) {
             // action number
         } else {
             // send chat
-            userInstance[joinID].sendMessage({
+            userInstance.getInstance(joinID).sendMessage({
                 text: text,
-                roomId: userInstance[joinID].rooms[0].id,
+                roomId: userInstance.getInstance(joinID).rooms[0].id,
             }).catch(err => {
                 console.log(`user.sendMessage error:`, error.info.error);
             })
