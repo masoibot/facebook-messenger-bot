@@ -47,7 +47,7 @@ function doActionConvo(chat, convo, userID, userRole, playerList, actionCallback
         }
     });
 }
-function doNightRole(chat, userRole, playerList) {
+function doNightRole(chat, userID, userRole, playerList) {
     if (userRole == 1) { // là tiên tri
         chat.conversation(convo => {
             doActionConvo(chat, convo, userID, userRole, playerList, sendSee, `Tiên tri muốn soi ai?`);
@@ -103,11 +103,11 @@ function mainNightRole(chat, gameData, userID, userRole, playerList) {
     if (gameData.roleAction.superWolfVictimID == userID) { // kẻ bị sói nguyền
         chat.conversation(convo => {
             doActionConvo(chat, convo, userID, userRole, playerList, sendVote, `Sói muốn cắn ai?`, () => {
-                doNightRole(chat, userRole, playerList);
+                doNightRole(chat, userID, userRole, playerList);
             });
         })
     } else {
-        doNightRole(chat, userRole, playerList);
+        doNightRole(chat, userID, userRole, playerList);
     }
 };
 
