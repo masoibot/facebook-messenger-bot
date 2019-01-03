@@ -25,7 +25,7 @@ module.exports = (userInstance, bot) => {
                                     // data from server
                                     let data = JSON.parse(message.text).data;
                                     userInstance.setData(joinID, data);
-                                    userInstance.setPlayerList(joinID, [...gameData.villagersID.map(u => {
+                                    userInstance.setPlayerList(joinID, [...data.villagersID.map(u => {
                                         count++;
                                         return `${count}: ${u}`;
                                     }), ...gameData.wolfsID.map(u => {
