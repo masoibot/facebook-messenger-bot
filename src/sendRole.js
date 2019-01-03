@@ -1,7 +1,9 @@
 const request = require('request');
+const { roleName, extractUserRole } = require('./DataUtils');
 
 const serverHost = 'localhost:3001';
 const targetURL = '/play/20509498/do?action=';
+
 
 function sendVote(targetID, userID) {
     var ret = "ERR: sendVote";
@@ -16,9 +18,10 @@ function sendVote(targetID, userID) {
 }
 function sendSee(targetID, userID) {
     console.log(`SENDING SEE ${targetID}`);
-    return `${targetID} là SÓI :v`;
+    return `${targetID} là ${roleName[extractUserRole(gameData, userID)]}`;
 }
 function sendFire(targetID, fireToKill) {
+    var ret = `ERR: sendFire`;
     request.get(`${serverHost + targetURL}{"roleAction.fireID":"${targetID}", "roleAction.fireToKill": ${fireToKill}}`, (err, res, body) => {
         console.log("body==", body);
         if (JSON.parse(body).success == true) {
@@ -32,9 +35,14 @@ function sendCupid(target1ID, target2ID) {
     console.log(`[no request] SEND CUPID ${target1ID} vs ${target2ID}`);
     return `GHÉP ĐÔI ${target1ID} vs ${target2ID}`;
 }
+function sendSave(targetID) {
+    console.log(`[no request] SEND Save ${targetID}`);
+    return `[no request] SEND Save ${targetID}`;
+}
 module.exports = {
     sendVote: sendVote,
     sendSee: sendSee,
+    sendSave: sendSave,
     sendFire: sendFire,
     sendCupid: sendCupid
 }

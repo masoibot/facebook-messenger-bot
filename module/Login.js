@@ -16,13 +16,23 @@ module.exports = (userInstance, bot) => {
                 });
                 newChatMgr.connect().then(currentUser => {
                     userInstance.setInstance(joinID, currentUser);
+                    userInstance.setUserID(joinID, userID);
                     currentUser.subscribeToRoom({
                         roomId: currentUser.rooms[0].id,
                         hooks: {
                             onMessage: message => {
                                 if (message.text[0] === '{') {
                                     // data from server
-                                    goStage(chat, JSON.parse(message.text).data, userID);
+                                    let data = JSON.parse(message.text).data;
+                                    userInstance.setData(joinID, data);
+                                    userInstance.setPlayerList(joinID, [...gameData.villagersID.map(u => {
+                                        count++;
+                                        return `${count}: ${u}`;
+                                    }), ...gameData.wolfsID.map(u => {
+                                        count++;
+                                        return `${count}: ${u}`;
+                                    })]);
+                                    goStage(chat, data, userID, userInstance.getPlayerList(joinID));
                                 } else {
                                     // chat from other
                                     if (message.sender.id !== currentUser.id) {

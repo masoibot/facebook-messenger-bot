@@ -1,30 +1,23 @@
-const { mainNightRole, doCupidRole } = require('./doNightRole');
+const { mainNightRole, doCupidRole } = require('./mainNightRole');
+const { roleName, extractUserRole } = require('./DataUtils');
 
-module.exports = function goStage(chat, gameData, userID) {
+module.exports = function goStage(chat, gameData, userID, playerList) {
     let count = 0;
-    playerList = [...gameData.villagersID.map(u => {
-        count++;
-        return `${count}: ${u}`;
-    }), ...gameData.wolfsID.map(u => {
-        count++;
-        return `${count}: ${u}`;
-    })];
     switch (gameData.dayStage) {
         case 'readyToGame':
             let notifySetup = `Trò chơi đang bắt đầu\nSETUP GAME\n`
             Object.keys(gameData.setup).forEach(key => {
                 if (gameData.setup[key].length > 0) {
-                    notifySetup += `${gameData.setup[key].length} ROLE_NAME[${key}]\n`;
+                    notifySetup += `${gameData.setup[key].length} ${roleName[key]}\n`;
                 }
             });
-            notifySetup += `Bạn là USER_ROLE_NAME\n`;
+            notifySetup += `Bạn là ${roleName[extractUserRole(gameData, userID)]}\n`;
             chat.say(notifySetup);
             break;
         case 'cupid':
             doCupidRole(chat, gameData, playerList);
             break;
         case 'night':
-            let notifyNight = `Đêm thứ ${gameData.day}:`;
             if (true) { // còn sống
                 mainNightRole(chat, gameData, userID, 1, playerList);
             } else {
@@ -38,7 +31,7 @@ module.exports = function goStage(chat, gameData, userID) {
             chat.say(`Phù thủy đang thực hiện role...`);
             break;
         case 'discuss':
-            let notifyDeath = `Trời sáng rồi, mọi người thảo luận đi!`;
+            let notifyDeath = `Trời sáng rồi, mọi người thảo luận đi!\n`;
             notifyDeath += gameData.lastDeath.length === 0 ? `Đêm qua không ai chết cả` : `${JSON.stringify(gameData.lastDeath)} đã chết!`;
             chat.say(notifyDeath);
             break;
@@ -48,7 +41,7 @@ module.exports = function goStage(chat, gameData, userID) {
                 quickReplies: playerList,
             });
             break;
-        case 'voteYesNo':
+        case 'voteyesno':
             chat.say({
                 text: `Treo hay tha?`,
                 quickReplies: ["/treo", "/tha"],

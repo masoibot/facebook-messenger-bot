@@ -1,5 +1,6 @@
 const { sendVote, sendSee, sendFire, sendCupid } = require('./sendRole')
 
+// part of 2-step vote
 function startConvo(convo, askItem, index, askSeq) {
     convo.ask(askItem.qreply ? {
         text: askItem.txt,
@@ -23,6 +24,7 @@ function startConvo(convo, askItem, index, askSeq) {
         }
     })
 }
+// start 2-step vote
 function voteConvo(chat, askSeq) {
     chat.conversation((convo) => {
         let len = askSeq.length;
@@ -30,6 +32,7 @@ function voteConvo(chat, askSeq) {
         startConvo(convo, askSeq[0], 0, askSeq)
     });
 }
+// single-step convo vote
 function doActionConvo(chat, convo, userID, userRole, playerList, actionCallback, askText, successCallback = () => { }) {
     convo.ask({
         text: askText,
@@ -47,6 +50,7 @@ function doActionConvo(chat, convo, userID, userRole, playerList, actionCallback
         }
     });
 }
+// all_vote
 function doNightRole(chat, userID, userRole, playerList) {
     if (userRole == 1) { // là tiên tri
         chat.conversation(convo => {
@@ -99,6 +103,7 @@ function doNightRole(chat, userID, userRole, playerList) {
         }])
     }
 }
+// MAIN
 function mainNightRole(chat, gameData, userID, userRole, playerList) {
     if (gameData.roleAction.superWolfVictimID == userID) { // kẻ bị sói nguyền
         chat.conversation(convo => {
@@ -110,7 +115,7 @@ function mainNightRole(chat, gameData, userID, userRole, playerList) {
         doNightRole(chat, userID, userRole, playerList);
     }
 };
-
+// cupid stage
 function doCupidRole(chat, gameData, playerList) {
     voteConvo(chat, [{
         txt: "GHÉP ĐÔI: Chọn người thứ nhất:",

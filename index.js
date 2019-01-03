@@ -16,29 +16,10 @@ const userInstance = new UserInstance();
 
 //module import
 const loginModule = require('./module/Login');
+const allMessage = require('./module/AllMessage');
 
 // use module
 userInstance.module(loginModule, bot);
-
-bot.on('message', (payload, chat, data) => {
-    if (data.captured) { return; }
-    const joinID = payload.sender.id;
-    const text = payload.message.text;
-    if (!userInstance.getInstance(joinID)) {
-        chat.say(`Vui lòng đăng nhập lại!`);
-    } else {
-        if (/[0-9]+:.+|-1/g.test(text)) {
-            // action number
-        } else {
-            // send chat
-            userInstance.getInstance(joinID).sendMessage({
-                text: text,
-                roomId: userInstance.getInstance(joinID).rooms[0].id,
-            }).catch(err => {
-                console.log(`user.sendMessage error:`, error.info.error);
-            })
-        }
-    }
-});
+userInstance.module(allMessage, bot);
 
 bot.start(process.env.PORT || 3000);
