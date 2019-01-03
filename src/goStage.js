@@ -2,7 +2,6 @@ const { mainNightRole, doCupidRole } = require('./mainNightRole');
 const { roleName, extractUserRole } = require('./DataUtils');
 
 module.exports = function goStage(chat, gameData, userID, playerList) {
-    let count = 0;
     switch (gameData.dayStage) {
         case 'readyToGame':
             let notifySetup = `Trò chơi đang bắt đầu\nSETUP GAME\n`

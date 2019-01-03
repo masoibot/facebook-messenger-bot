@@ -25,13 +25,15 @@ module.exports = (userInstance, bot) => {
                                     // data from server
                                     let data = JSON.parse(message.text).data;
                                     userInstance.setData(joinID, data);
-                                    userInstance.setPlayerList(joinID, [...data.villagersID.map(u => {
+                                    let count = 0;
+                                    let playerList = [...data.villagersID.map(u => {
                                         count++;
                                         return `${count}: ${u}`;
                                     }), ...gameData.wolfsID.map(u => {
                                         count++;
                                         return `${count}: ${u}`;
-                                    })]);
+                                    })]
+                                    userInstance.setPlayerList(joinID, playerList);
                                     goStage(chat, data, userID, userInstance.getPlayerList(joinID));
                                 } else {
                                     // chat from other
