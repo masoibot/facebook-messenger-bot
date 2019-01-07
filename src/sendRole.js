@@ -1,50 +1,55 @@
 const request = require('request');
 const { roleName, extractUserRole } = require('./DataUtils');
 
-const serverHost = 'http://localhost:3001/play/20509498/do?action=';
+const serverHost = 'http://localhost:3001';
 
-async function sendRequest(targetURL, successTxt, failedTxt) {
+async function sendRequest(url) {
     return new Promise((resolve, reject) => {
-        request.get(`${serverHost + targetURL}`, (err, res, body) => {
+        request.get(`${serverHost + url}`, (err, res, body) => {
             try {
-                if (JSON.parse(body).success === true) {
-                    resolve(successTxt);
-                } else {
-                    resolve(failedTxt);
-                }
+                resolve(JSON.parse(body));
             } catch (e) {
-                resolve(failedTxt);
+                resolve({ success: 'false', err: "body_JSON_parse_failed" });
             }
         });
     })
 }
+async function sendVoteRequest(action, successTxt, failedTxt) {
+    return sendRequest(`/play/20509498/do?action=${action}`).then((data) => {
+        if (data.success === true) {
+            return successTxt;
+        } else {
+            return failedTxt;
+        }
+    })
+}
 async function sendVote(gameData, targetID, userID) {
     console.log(`send Vote ${userID} => ${targetID}`);
-    return await sendRequest(`{"roleTarget.voteList.${userID}":"${targetID}"}`, `Đã vote!`, `sendVote_error`);
+    return await sendVoteRequest(`{"roleTarget.voteList.${userID}":"${targetID}"}`, `Đã vote!`, `sendVote_error`);
 }
 async function sendFire(targetID, fireToKill) {
     console.log(`send Fire ${fireToKill ? 'GIẾT' : 'GHIM'} ${targetID}`);
-    return await sendRequest(`{ "roleTarget.fireID": "${targetID}", "roleTarget.fireToKill": ${fireToKill}} `, `Đã bắn!`, `sendFire_error`);
+    return await sendVoteRequest(`{ "roleTarget.fireID": "${targetID}", "roleTarget.fireToKill": ${fireToKill}} `, `Đã bắn!`, `sendFire_error`);
 }
 async function sendCupid(target1ID, target2ID) {
     console.log(`SEND CUPID ${target1ID} vs ${target2ID} `);
-    return await sendRequest(`{"roleTarget.coupleList":["${target1ID}","${target2ID}"]}`, `Đã ghép đôi!`, `sendCupid_error`);
+    return await sendVoteRequest(`{"roleTarget.coupleList":["${target1ID}","${target2ID}"]}`, `Đã ghép đôi!`, `sendCupid_error`);
 }
 async function sendSuperWolf(targetID) {
     console.log(`SEND SUPERWOLF ${targetID}`);
-    return await sendRequest(`{"roleTarget.superWolfVictimID":"${targetID}"}`, `Đã nguyền!`, `sendSuperWolf_error`);
+    return await sendVoteRequest(`{"roleTarget.superWolfVictimID":"${targetID}"}`, `Đã nguyền!`, `sendSuperWolf_error`);
 }
 async function sendWitchSave() {
     console.log(`send WitchSave`);
-    return await sendRequest(`{"roleTarget.witchUseSave":true}`, `Đã cứu!`, `sendWitchSave_error`);
+    return await sendVoteRequest(`{"roleTarget.witchUseSave":true}`, `Đã cứu!`, `sendWitchSave_error`);
 }
 async function sendWitchKill(targetID) {
     console.log(`send WitchKill ${targetID}`);
-    return await sendRequest(`{"roleTarget.witchKillID":"${targetID}"}`, `Đã giết!`, `sendWitchKill_error`);
+    return await sendVoteRequest(`{"roleTarget.witchKillID":"${targetID}"}`, `Đã giết!`, `sendWitchKill_error`);
 }
 async function sendSave(targetID) {
     console.log(`SEND Save ${targetID} `);
-    return await sendRequest(`{"roleTarget.saveID":"${targetID}"}`, `Đã bảo vệ!`, `sendSave_error`);
+    return await sendVoteRequest(`{"roleTarget.saveID":"${targetID}"}`, `Đã bảo vệ!`, `sendSave_error`);
 }
 function sendSee(gameData, targetID, userID) {
     console.log(`SEE ${targetID}`);
@@ -56,6 +61,7 @@ function sendSee(gameData, targetID, userID) {
     }
 }
 module.exports = {
+    sendRequest: sendRequest,
     sendVote: sendVote,
     sendSee: sendSee,
     sendSave: sendSave,

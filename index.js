@@ -16,14 +16,14 @@ bot.setGreetingText("Chào mừng bạn đến với MA SÓI BOT bởi Phạm Ng
 bot.setGetStartedButton((payload, chat) => {
     chat.say('🐺MA SÓI CLIENT MESSENGER').then(() => {
         chat.say({
-            text: `Chào mừng bạn, bấm login để bắt đầu'`,
-            quickReplies: ['/login'],
+            text: `Chào bạn, bấm /register để bắt đầu'`,
+            quickReplies: ['/register', '/login'],
         });
     })
 });
 const actionButtons = [
-    { type: 'postback', title: '🎮Chơi...', payload: 'CONNECT' },
-    { type: 'postback', title: 'X Ngắt kết nối...', payload: 'DISCONNECT' }
+    { type: 'postback', title: '🎮Kết nối...', payload: 'CONNECT' },
+    { type: 'postback', title: '🚫Ngắt kết nối...', payload: 'DISCONNECT' }
 ];
 bot.setPersistentMenu(actionButtons, false);
 
@@ -33,9 +33,11 @@ const userInstance = new UserInstance();
 //module import
 const loginModule = require('./module/Login');
 const allMessage = require('./module/AllMessage');
+const roomModule = require('./module/Room');
 
 // use module
 userInstance.module(loginModule, bot);
 userInstance.module(allMessage, bot);
+userInstance.module(roomModule, bot);
 
 bot.start(process.env.PORT || 3000);

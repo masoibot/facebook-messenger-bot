@@ -31,7 +31,7 @@ function startConvo(convo, askSeq, index) {
 }
 // start 2-step vote
 function voteConvo(chat, askSeq, timeout) {
-    let convoTimeout = new Date(timeout) + 10000;
+    let convoTimeout = new Date(timeout) + 6000;
     chat.conversation((convo) => {
         schedule.scheduleJob(convoTimeout, () => {
             convo.say(`Hết giờ!`);
