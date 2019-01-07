@@ -1,48 +1,67 @@
 const request = require('request');
 const { roleName, extractUserRole } = require('./DataUtils');
 
-const serverHost = 'localhost:3001';
-const targetURL = '/play/20509498/do?action=';
+const serverHost = 'http://localhost:3001/play/20509498/do?action=';
 
-
-function sendVote(targetID, userID) {
-    var ret = "ERR: sendVote";
-    request.get(`${serverHost + targetURL}{"voteList.${userID}":"${targetID}"}`, (err, res, body) => {
-        console.log("body==", body);
-        if (JSON.parse(body).success == true) {
-            ret = `${userID} ĐÃ VOTE ${targetID}`;
-        }
-    });
-    console.log(ret);
-    return ret;
+async function sendRequest(targetURL, successTxt, failedTxt) {
+    return new Promise((resolve, reject) => {
+        request.get(`${serverHost + targetURL}`, (err, res, body) => {
+            try {
+                if (JSON.parse(body).success === true) {
+                    resolve(successTxt);
+                } else {
+                    resolve(failedTxt);
+                }
+            } catch (e) {
+                resolve(failedTxt);
+            }
+        });
+    })
 }
-function sendSee(targetID, userID) {
-    console.log(`SENDING SEE ${targetID}`);
-    return `${targetID} là ${roleName[extractUserRole(gameData, userID)]}`;
+async function sendVote(gameData, targetID, userID) {
+    console.log(`send Vote ${userID} => ${targetID}`);
+    return await sendRequest(`{"roleTarget.voteList.${userID}":"${targetID}"}`, `Đã vote!`, `sendVote_error`);
 }
-function sendFire(targetID, fireToKill) {
-    var ret = `ERR: sendFire`;
-    request.get(`${serverHost + targetURL}{"roleAction.fireID":"${targetID}", "roleAction.fireToKill": ${fireToKill}}`, (err, res, body) => {
-        console.log("body==", body);
-        if (JSON.parse(body).success == true) {
-            ret = `${fireToKill ? 'GIẾT' : 'GHIM'} ${targetID}`;
-        }
-    });
-    console.log(ret);
-    return ret
+async function sendFire(targetID, fireToKill) {
+    console.log(`send Fire ${fireToKill ? 'GIẾT' : 'GHIM'} ${targetID}`);
+    return await sendRequest(`{ "roleTarget.fireID": "${targetID}", "roleTarget.fireToKill": ${fireToKill}} `, `Đã bắn!`, `sendFire_error`);
 }
-function sendCupid(target1ID, target2ID) {
-    console.log(`[no request] SEND CUPID ${target1ID} vs ${target2ID}`);
-    return `GHÉP ĐÔI ${target1ID} vs ${target2ID}`;
+async function sendCupid(target1ID, target2ID) {
+    console.log(`SEND CUPID ${target1ID} vs ${target2ID} `);
+    return await sendRequest(`{"roleTarget.coupleList":["${target1ID}","${target2ID}"]}`, `Đã ghép đôi!`, `sendCupid_error`);
 }
-function sendSave(targetID) {
-    console.log(`[no request] SEND Save ${targetID}`);
-    return `[no request] SEND Save ${targetID}`;
+async function sendSuperWolf(targetID) {
+    console.log(`SEND SUPERWOLF ${targetID}`);
+    return await sendRequest(`{"roleTarget.superWolfVictimID":"${targetID}"}`, `Đã nguyền!`, `sendSuperWolf_error`);
+}
+async function sendWitchSave() {
+    console.log(`send WitchSave`);
+    return await sendRequest(`{"roleTarget.witchUseSave":true}`, `Đã cứu!`, `sendWitchSave_error`);
+}
+async function sendWitchKill(targetID) {
+    console.log(`send WitchKill ${targetID}`);
+    return await sendRequest(`{"roleTarget.witchKillID":"${targetID}"}`, `Đã giết!`, `sendWitchKill_error`);
+}
+async function sendSave(targetID) {
+    console.log(`SEND Save ${targetID} `);
+    return await sendRequest(`{"roleTarget.saveID":"${targetID}"}`, `Đã bảo vệ!`, `sendSave_error`);
+}
+function sendSee(gameData, targetID, userID) {
+    console.log(`SEE ${targetID}`);
+    let userRole = extractUserRole(gameData, targetID);
+    if (userRole == -1 || userRole == -3 || userRole == 8 || targetID == gameData.roleInfo.superWolfVictimID) { // là sói hoặc người hóa sói
+        return `🐺${gameData.players.names[targetID]} là PHE SÓI!`;
+    } else {
+        return `🎅${gameData.players.names[targetID]} là PHE DÂN!`;
+    }
 }
 module.exports = {
     sendVote: sendVote,
     sendSee: sendSee,
     sendSave: sendSave,
     sendFire: sendFire,
-    sendCupid: sendCupid
+    sendCupid: sendCupid,
+    sendSuperWolf: sendSuperWolf,
+    sendWitchSave: sendWitchSave,
+    sendWitchKill: sendWitchKill
 }

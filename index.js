@@ -12,7 +12,23 @@ const bot = new BootBot({
     verifyToken: 'bautroixa',
     appSecret: '51730441760157aa64ba6249824e429b'
 });
+bot.setGreetingText("Chào mừng bạn đến với MA SÓI BOT bởi Phạm Ngọc Duy :3")
+bot.setGetStartedButton((payload, chat) => {
+    chat.say('🐺MA SÓI CLIENT MESSENGER').then(() => {
+        chat.say({
+            text: `Chào mừng bạn, bấm login để bắt đầu'`,
+            quickReplies: ['/login'],
+        });
+    })
+});
+const actionButtons = [
+    { type: 'postback', title: '🎮Chơi...', payload: 'CONNECT' },
+    { type: 'postback', title: 'X Ngắt kết nối...', payload: 'DISCONNECT' }
+];
+bot.setPersistentMenu(actionButtons, false);
+
 const userInstance = new UserInstance();
+
 
 //module import
 const loginModule = require('./module/Login');

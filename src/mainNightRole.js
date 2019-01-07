@@ -1,7 +1,10 @@
-const { sendVote, sendSee, sendFire, sendCupid } = require('./sendRole')
+const { sendVote, sendSee, sendFire, sendCupid, sendSuperWolf, sendWitchSave, sendWitchKill } = require('./sendRole');
+const { roleName } = require('./DataUtils');
+var schedule = require('node-schedule')
 
 // part of 2-step vote
-function startConvo(convo, askItem, index, askSeq) {
+function startConvo(convo, askSeq, index) {
+    var askItem = askSeq[index];
     convo.ask(askItem.qreply ? {
         text: askItem.txt,
         quickReplies: askItem.qreply,
@@ -12,63 +15,60 @@ function startConvo(convo, askItem, index, askSeq) {
             if (result) {
                 convo.set(`data[${index}]`, result);
                 if (index + 1 < askSeq.length) {
-                    startConvo(convo, askSeq[index + 1], index + 1, askSeq);
+                    startConvo(convo, askSeq, index + 1);
+                } else {
+                    convo.end();
                 }
             } else {
                 convo.say(`Thao tác sai! Vui lòng thử lại!`);
-                convo.end();
+                startConvo(convo, askSeq, index);
             }
         } else {
             convo.say(`Vui lòng thử lại!`);
-            convo.end();
+            startConvo(convo, askSeq, index);
         }
     })
 }
 // start 2-step vote
-function voteConvo(chat, askSeq) {
+function voteConvo(chat, askSeq, timeout) {
+    let convoTimeout = new Date(timeout) + 10000;
     chat.conversation((convo) => {
+        schedule.scheduleJob(convoTimeout, () => {
+            convo.say(`Hết giờ!`);
+            convo.end();
+        })
         let len = askSeq.length;
         if (len <= 0) return;
-        startConvo(convo, askSeq[0], 0, askSeq)
-    });
-}
-// single-step convo vote
-function doActionConvo(chat, convo, userID, userRole, playerList, actionCallback, askText, successCallback = () => { }) {
-    convo.ask({
-        text: askText,
-        quickReplies: playerList,
-    }, (payload, convo) => {
-        let result = payload.message ? actionCallback(payload.message.text, userID) : null;
-        if (result != null) {
-            convo.say(`=>${result}`).then(() => {
-                convo.end();
-                successCallback();
-            })
-        } else {
-            doActionConvo(chat, convo, userID, userRole, playerList, actionCallback, `Vui lòng thử lại!\n${askText}`);
-            convo.end();
-        }
+        startConvo(convo, askSeq, 0);
     });
 }
 // all_vote
-function doNightRole(chat, userID, userRole, playerList) {
+function doNightRole(gameData, chat, userID, userRole, playerList) {
+    let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n`;
     if (userRole == 1) { // là tiên tri
-        chat.conversation(convo => {
-            doActionConvo(chat, convo, userID, userRole, playerList, sendSee, `Tiên tri muốn soi ai?`);
-        })
+        voteConvo(chat, [{
+            txt: `${pre_txt}Tiên tri muốn soi ai?`,
+            qreply: Object.values(playerList),
+            callback: (convo, index, resTxt) => {
+                let targetID = resTxt.match(/[0-9]+/g)[0];
+                let result = sendSee(gameData, Object.keys(playerList)[targetID], userID);
+                convo.say(`=>${result}`);
+                return 1;
+            }
+        }], gameData.state.stageEnd);
     } else if (userRole == -1 || userRole == -3) {// là SÓI / SÓI NGUYỀN
         chat.say({
-            text: `Sói muốn cắn ai?`,
-            quickReplies: playerList,
+            text: `${pre_txt}Sói muốn cắn ai?`,
+            quickReplies: Object.values(playerList),
         });
     } else if (userRole == 2) { // là bảo vệ
         chat.say({
-            text: `Bảo vệ muốn bảo vệ ai?`,
-            quickReplies: playerList,
+            text: `${pre_txt}Bảo vệ muốn bảo vệ ai?`,
+            quickReplies: Object.values(playerList),
         });
     } else if (userRole == 3) { // là thợ săn
         voteConvo(chat, [{
-            txt: "Thợ săn muốn ghim hãy bắn chết luôn?",
+            txt: `${pre_txt}Thợ săn muốn ghim hãy bắn chết luôn?`,
             qreply: ["ghim", "giết"],
             callback: (convo, index, resTxt) => {
                 if (/^ghim$/.test(resTxt)) {
@@ -81,7 +81,7 @@ function doNightRole(chat, userID, userRole, playerList) {
             }
         }, {
             txt: "Thợ săn muốn ghim ai?",
-            qreply: playerList,
+            qreply: Object.values(playerList),
             callback: (convo, index, resTxt) => {
                 let type = convo.get(`data[${index - 1}]`);
                 let voteID;
@@ -91,35 +91,53 @@ function doNightRole(chat, userID, userRole, playerList) {
                     return null;
                 }
                 if (type == 1) { // ghim
-                    sendFire(voteID, false);
+                    sendFire(Object.keys(playerList)[voteID], false);
                     return true;
                 } else if (type == 2) { // bắn
-                    sendFire(voteID, true);
+                    sendFire(Object.keys(playerList)[voteID], true);
                     return true;
                 } else {
                     return null;
                 }
             }
-        }])
+        }], gameData.state.stageEnd)
+    } else {
+        chat.say(`${pre_txt}Bạn là ${roleName[userRole]}, ngủ đi bạn!`);
     }
 }
 // MAIN
 function mainNightRole(chat, gameData, userID, userRole, playerList) {
-    if (gameData.roleAction.superWolfVictimID == userID) { // kẻ bị sói nguyền
-        chat.conversation(convo => {
-            doActionConvo(chat, convo, userID, userRole, playerList, sendVote, `Sói muốn cắn ai?`, () => {
-                doNightRole(chat, userID, userRole, playerList);
-            });
-        })
+    let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n`;
+    if (gameData.roleInfo.superWolfVictimID == userID) { // kẻ bị sói nguyền
+        voteConvo(chat, [{
+            txt: `${pre_txt}Sói muốn cắn ai?`,
+            qreply: Object.values(playerList),
+            callback: (convo, index, resTxt) => {
+                let targetID = resTxt.match(/[0-9]+/g)[0];
+                var doAsync = async () => {
+                    let result = await sendVote(gameData, Object.keys(playerList)[targetID], userID);
+                    convo.say(`=>${result}`);
+                };
+                doAsync();
+                doNightRole(gameData, chat, userID, userRole, playerList);
+                return 1;
+            }
+        }], gameData.state.stageEnd);
+        // chat.conversation(convo => {
+        //     doActionConvo(gameData, chat, convo, userID, userRole, playerList, sendVote, `${pre_txt}Sói muốn cắn ai?`, () => {
+        //         doNightRole(gameData, chat, userID, userRole, playerList);
+        //     });
+        // })
     } else {
-        doNightRole(chat, userID, userRole, playerList);
+        doNightRole(gameData, chat, userID, userRole, playerList);
     }
 };
 // cupid stage
 function doCupidRole(chat, gameData, playerList) {
+    let pre_txt = `ĐÊM THỨ ${gameData.state.day}: `;
     voteConvo(chat, [{
-        txt: "GHÉP ĐÔI: Chọn người thứ nhất:",
-        qreply: playerList,
+        txt: `${pre_txt}GHÉP ĐÔI\nChọn người thứ nhất:`,
+        qreply: Object.values(playerList),
         callback: (convo, index, resTxt) => {
             if (/[0-9]+:.+/g.test(resTxt)) {
                 return resTxt.match(/[0-9]+/g)[0];
@@ -129,23 +147,105 @@ function doCupidRole(chat, gameData, playerList) {
         }
     }, {
         txt: "GHÉP ĐÔI: Chọn người thứ hai:",
-        qreply: playerList,
+        qreply: Object.values(playerList),
         callback: (convo, index, resTxt) => {
             let user1ID = convo.get(`data[${index - 1}]`);
             if (!user1ID) return null;
             if (/[0-9]+:.+/g.test(resTxt)) {
                 let user2ID = resTxt.match(/[0-9]+/g)[0];
-                sendCupid(user1ID, user2ID)
+                var doAsync = async () => {
+                    let result = await sendCupid(Object.keys(playerList)[user1ID], Object.keys(playerList)[user2ID]);
+                    convo.say(`=>${result}`);
+                };
+                doAsync();
                 return true;
             } else {
                 return null;
             }
 
         }
-    }])
+    }], gameData.state.stageEnd)
+}
+function doSuperWolfRole(chat, gameData) {
+    let victimID = gameData.roleInfo.victimID;
+    if (victimID != "") {
+        voteConvo(chat, [{
+            txt: `SÓI NGUYỀN\n${gameData.players.names[victimID]} đã chết`,
+            qreply: ["nguyen", "khong"],
+            callback: (convo, index, resTxt) => {
+                if (/^nguyen$/.test(resTxt)) {
+                    var doAsync = async () => {
+                        let result = await sendSuperWolf(victimID);
+                        convo.say(`=>${result}`);
+                    };
+                    doAsync();
+                    return 1;
+                } else if (/^khong$/.test(resTxt)) {
+                    return 1;
+                } else {
+                    return null;
+                }
+            }
+        }], gameData.state.stageEnd);
+    } else {
+        if (gameData.roleInfo.superWolfVictimID!="") {
+            chat.say(`SÓI NGUYỀN\nBạn đã nguyền rồi!`);
+        } else {
+            chat.say(`SÓI NGUYỀN\nKhông có ma nào chết cả :v`);
+        }
+    }
+}
+function doWitchRole(chat, gameData, playerList) {
+    let victimID = gameData.roleInfo.victimID;
+    let convoArr = [];
+    if (victimID != "" && gameData.roleInfo.witchSaveRemain) {
+        convoArr = [...convoArr, {
+            txt: `PHÙ THỦY\n${gameData.players.names[victimID]} đã chết`,
+            qreply: ["cuu", "khong"],
+            callback: (convo, index, resTxt) => {
+                if (/^cuu$/.test(resTxt)) {
+                    var doAsync = async () => {
+                        let result = await sendWitchSave();
+                        convo.say(`=>${result}`);
+                    };
+                    doAsync();
+                    return 1;
+                } else if (/^khong$/.test(resTxt)) {
+                    return 1;
+                } else {
+                    return null;
+                }
+            }
+        }];
+    }
+    if (gameData.roleInfo.witchKillRemain) {
+        convoArr = [...convoArr, {
+            txt: "PHÙ THỦY\nBạn muốn giết ai không?",
+            qreply: ["-1: Không", ...Object.values(playerList)],
+            callback: (convo, index, resTxt) => {
+                let voteID;
+                if (/-?[0-9]+:.+/g.test(resTxt)) {
+                    voteID = resTxt.match(/-?[0-9]+/g)[0];
+                    if (voteID != -1) {
+                        var doAsync = async () => {
+                            let result = await sendWitchKill(Object.keys(playerList)[voteID]);
+                            convo.say(`=>${result}`);
+                        };
+                        doAsync();
+                    }
+                    return 1;
+                } else {
+                    return null;
+                }
+            }
+        }];
+    }
+    voteConvo(chat, convoArr, gameData.state.stageEnd);
 }
 
 module.exports = {
     mainNightRole: mainNightRole,
-    doCupidRole: doCupidRole
+    doCupidRole: doCupidRole,
+    doSuperWolfRole: doSuperWolfRole,
+    doWitchRole: doWitchRole
 }

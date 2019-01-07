@@ -10,6 +10,9 @@ function extractUserRole(gameData, userID) {
     })
     return ret;
 }
+function isAlive(gameData, userID) {
+    return gameData.roleInfo.deathList.indexOf(userID) == -1;
+}
 const roleName = {
     // PHE SÓI
     "-1": '🐺SÓI',
@@ -41,4 +44,5 @@ module.exports = {
     extractUserRole: extractUserRole,
     roleName: roleName,
     nextStageArr: nextStageArr,
+    isAlive: isAlive,
 }
