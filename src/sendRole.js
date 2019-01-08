@@ -1,7 +1,7 @@
 const request = require('request');
 const { roleName, extractUserRole } = require('./DataUtils');
 
-const serverHost = 'http://localhost:3001';
+const serverHost = 'https://masoiapp.herokuapp.com';
 
 async function sendRequest(url) {
     return new Promise((resolve, reject) => {
