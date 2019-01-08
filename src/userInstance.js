@@ -142,8 +142,17 @@ module.exports = class UserInstance {
                             data.state.dayStage === 'discuss' // thảo luận
                         ) {
                             if (message.sender.id !== currentUser.id) {
-                                chat.say(`${message.sender.name}: ${message.text}`);
-                                console.log(`${message.sender.name}: ${message.text}`);
+                                if (message.attachment && message.attachment.type && message.attachment.link) {
+                                    // attachment
+                                    chat.say([`${message.sender.name} đã gửi...`, {
+                                        attachment: message.attachment.type,
+                                        url: message.attachment.link
+                                    }])
+                                } else {
+                                    // text
+                                    chat.say(`${message.sender.name}: ${message.text}`);
+                                    console.log(`${message.sender.name}: ${message.text}`);
+                                }
                             } else {
                                 chat.sendAction('mark_seen');
                             }
