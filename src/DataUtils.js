@@ -30,6 +30,12 @@ const roleName = {
     "8": '👽NGƯỜI HÓA SÓI',
     "9": '🧚‍THIÊN SỨ',
 }
+const phe = {
+    "9": "Thiên sứ",
+    "3": "Cặp đôi",
+    "-1": "Sói",
+    "1": "DÂN",
+}
 
 const nextStageArr = {
     "cupid": "night",
@@ -45,4 +51,5 @@ module.exports = {
     roleName: roleName,
     nextStageArr: nextStageArr,
     isAlive: isAlive,
+    phe: phe
 }

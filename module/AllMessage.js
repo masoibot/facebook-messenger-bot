@@ -1,4 +1,5 @@
 const handleVoteID = require('../src/HandleVoteID');
+const { extractUserRole } = require('../src/DataUtils');
 
 module.exports = (userInstance, bot) => {
     bot.on('message', async (payload, chat, data) => {
@@ -29,14 +30,22 @@ module.exports = (userInstance, bot) => {
             let targetID = Object.keys(playerList)[targetIndex];
             chat.say(await handleVoteID(data, userID, targetID));
         } else {
-            // message_content
-            userInstance.getInstance(joinID).sendMessage({
-                text: text,
-                roomId: userInstance.getInstance(joinID).rooms[0].id,
-            }).catch(err => {
-                chat.say(`Không gửi được tin nhắn!\nuser.sendMessage error`);
-                console.log(`user.sendMessage error:`, error.info.error);
-            })
+            let userRole = extractUserRole(data, userID);
+            if (data.state.status === 'waiting' || // phòng chờ
+                (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
+                data.state.dayStage === 'discuss' || // thảo luận
+                (data.state.dayStage === 'lastWord' && userID == data.roleInfo.victimID)) { // trăn trối / giẫy
+                // message_content
+                userInstance.getInstance(joinID).sendMessage({
+                    text: text,
+                    roomId: userInstance.getInstance(joinID).rooms[0].id,
+                }).catch(err => {
+                    chat.say(`Không gửi được tin nhắn!\nuser.sendMessage error`);
+                    console.log(`user.sendMessage error:`, error.info.error);
+                })
+            } else {
+                chat.say(`Bạn không thể gửi tin nhắn!`);
+            }
         }
 
     });

@@ -53,6 +53,7 @@ async function sendSave(targetID) {
 }
 function sendSee(gameData, targetID, userID) {
     console.log(`SEE ${targetID}`);
+    sendVoteRequest(`{"roleTarget.seeID":"${targetID}"}`, `DONE`, `sendSee_error`);
     let userRole = extractUserRole(gameData, targetID);
     if (userRole == -1 || userRole == -3 || userRole == 8 || targetID == gameData.roleInfo.superWolfVictimID) { // là sói hoặc người hóa sói
         return `🐺${gameData.players.names[targetID]} là PHE SÓI!`;

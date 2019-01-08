@@ -1,6 +1,6 @@
 const { ChatManager, TokenProvider } = require('@pusher/chatkit-client');
 const goStage = require('../src/goStage');
-const { isAlive } = require('../src/DataUtils');
+const { isAlive, phe, extractUserRole } = require('../src/DataUtils');
 
 module.exports = class UserInstance {
     constructor() {
@@ -102,6 +102,7 @@ module.exports = class UserInstance {
             roomId: roomID,
             hooks: {
                 onMessage: message => {
+                    let userID = this.getUserID(joinID);
                     if (message.text[0] === '{') {
                         // data from server
                         try {
@@ -112,8 +113,10 @@ module.exports = class UserInstance {
                                     return `${data.players.ready[u] ? `🌟` : `☆`}${i + 1}: ${data.players.names[u]}`;
                                 }).join("\n"));
                                 return;
+                            } else if (res.action == "endGame") {
+                                chat.say(`TRÒ CHƠI ĐÃ KẾT THÚC:\n${phe[data.roleWin]} THẮNG\n\n` + data.logs.join("\n"));
+                                return;
                             }
-                            let userID = this.getUserID(joinID);
                             if (data.players.allID.indexOf(userID) != -1) {
                                 this.setData(joinID, data); // lưu gameData
                                 let fullList = data.players.allID.filter((id) => { // lọc người còn sống
@@ -133,11 +136,17 @@ module.exports = class UserInstance {
                         }
                     } else {
                         // chat from other
-                        if (message.sender.id !== currentUser.id) {
-                            chat.say(`${message.sender.name}: ${message.text}`);
-                            console.log(`${message.sender.name}: ${message.text}`);
-                        } else {
-                            chat.sendAction('mark_seen');
+                        let userRole = extractUserRole(data, userID);
+                        if (data.state.status === 'waiting' || // phòng chờ
+                            (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
+                            data.state.dayStage === 'discuss' // thảo luận
+                        ) {
+                            if (message.sender.id !== currentUser.id) {
+                                chat.say(`${message.sender.name}: ${message.text}`);
+                                console.log(`${message.sender.name}: ${message.text}`);
+                            } else {
+                                chat.sendAction('mark_seen');
+                            }
                         }
                     }
                 }
