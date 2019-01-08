@@ -3,13 +3,25 @@ const { roleName, extractUserRole } = require('./DataUtils');
 
 const serverHost = 'https://masoiapp.herokuapp.com';
 
+async function postRequest(url, body) {
+    return new Promise((resolve, reject) => {
+        request.post({ url: `${serverHost + url}`, form: body }, (err, res, body) => {
+            try {
+                resolve(JSON.parse(body));
+            } catch (e) {
+                resolve({ success: 'false', err: "post_request_failed" });
+            }
+        });
+    })
+}
+
 async function sendRequest(url) {
     return new Promise((resolve, reject) => {
         request.get(`${serverHost + url}`, (err, res, body) => {
             try {
                 resolve(JSON.parse(body));
             } catch (e) {
-                resolve({ success: 'false', err: "body_JSON_parse_failed" });
+                resolve({ success: 'false', err: "get_request_failed" });
             }
         });
     })
@@ -62,6 +74,7 @@ function sendSee(gameData, targetID, userID) {
     }
 }
 module.exports = {
+    postRequest: postRequest,
     sendRequest: sendRequest,
     sendVote: sendVote,
     sendSee: sendSee,

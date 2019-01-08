@@ -1,3 +1,5 @@
+const { postRequest } = require('../src/sendRole');
+
 module.exports = (userInstance, bot) => {
     const loginCallback = (payload, chat) => {
         const joinID = payload.sender.id;
@@ -5,7 +7,7 @@ module.exports = (userInstance, bot) => {
         var currentUser = userInstance.getInstance(joinID);
         if (!currentUser) {
             chat.conversation((convo) => {
-                convo.ask(`Nhập mã định danh (bí mật):`, (payload, convo) => {
+                convo.ask(`Nhập tên đã đăng kí:`, (payload, convo) => {
                     const userID = payload.message ? payload.message.text : "";
                     userInstance.connectChat(userID, joinID, convo)
                     // .then((currentUser) => {
@@ -33,7 +35,30 @@ module.exports = (userInstance, bot) => {
         const joinID = payload.sender.id;
         console.log(`${joinID} register...`);
         var currentUser = userInstance.getInstance(joinID);
-        if (currentUser) {
+        if (!currentUser) {
+            chat.conversation((convo) => {
+                convo.ask(`Đăng kí 1 tên (viết liền không dấu):\nVD: duy`, (payload, convo) => {
+                    const userID = payload.message ? payload.message.text : "";
+                    chat.getUserProfile().then((user) => {
+                        postRequest(`/reg`, { id: userID, name: user.name, avatar: user.profile_pic }).then(data => {
+                            if (data.success) {
+                                convo.say({
+                                    text: `Bạn đã đăng kí thành công!\nVui lòng đăng nhập!`,
+                                    quickReplies: ["/login"]
+                                })
+                                convo.end();
+                            } else {
+                                convo.say(`Vui lòng thử lại!\nregister_error`);
+                                convo.end();
+                            }
+                        }).catch(err => {
+                            convo.say(`Vui lòng thử lại!\nregister_request_error`);
+                            convo.end();
+                        })
+                    });
+                });
+            });
+        } else {
             chat.say(`Bạn đã đăng nhập rồi!`);
         }
     }
