@@ -9,6 +9,7 @@ module.exports = class UserInstance {
         this.datas = [];
         this.playerLists = [];
         this.roomIDs = [];
+        this.readys = [];
     }
     setInstance(joinID, userInstance) {
         this.users[joinID] = userInstance;
@@ -39,6 +40,12 @@ module.exports = class UserInstance {
     }
     setRoomID(joinID, roomID) {
         this.roomIDs[joinID] = roomID;
+    }
+    getReady(joinID) {
+        return !!this.readys[joinID];
+    }
+    invertReady(joinID) {
+        this.readys[joinID] = !this.readys[joinID];
     }
     module(factory, bot) {
         return factory.apply(this, [this, bot]);
@@ -77,6 +84,10 @@ module.exports = class UserInstance {
             convo.end();
         })
     }
+    leaveChat(joinID) {
+        var currentUser = this.getInstance(joinID);
+        currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
+    }
     subscribeChat(roomID, joinID, chat, convo) {
         var currentUser = this.getInstance(joinID);
         if (!currentUser) {
@@ -94,7 +105,14 @@ module.exports = class UserInstance {
                     if (message.text[0] === '{') {
                         // data from server
                         try {
-                            var data = JSON.parse(message.text).data;
+                            var res = JSON.parse(message.text);
+                            var data = res.data;
+                            if (res.action == "ready") {
+                                chat.say(`PHÒNG ${roomID}\n` + Object.keys(data.players.ready).map((u, i) => {
+                                    return `${data.players.ready[u] ? `🌟` : `☆`}${i + 1}: ${data.players.names[u]}`;
+                                }).join("\n"));
+                                return;
+                            }
                             let userID = this.getUserID(joinID);
                             if (data.players.allID.indexOf(userID) != -1) {
                                 this.setData(joinID, data); // lưu gameData
