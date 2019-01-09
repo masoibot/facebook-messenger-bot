@@ -34,11 +34,14 @@ module.exports = (userInstance, bot) => {
             chat.say(await handleVoteID(data, userID, targetID));
         } else {
             // tin nhắn
-            let userRole = extractUserRole(data, userID);
-            if (data.state.status === 'waiting' || // phòng chờ
-                (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
-                data.state.dayStage === 'discuss' || // thảo luận
-                (data.state.dayStage === 'lastWord' && userID == data.roleInfo.victimID)) { // trăn trối / giẫy
+            var userRole;
+            if (!data || (data && data.state.status === 'waiting') || // phòng chờ / vừa join phòng
+                (data && (userRole = extractUserRole(data, userID)) && (
+                    (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
+                    data.state.dayStage === 'discuss' || // thảo luận
+                    (data.state.dayStage === 'lastWord' && userID == data.roleInfo.victimID)// trăn trối / giẫy
+                ))
+            ) {
                 // message_content
                 userInstance.getInstance(joinID).sendMessage({
                     text: text,
@@ -71,11 +74,14 @@ module.exports = (userInstance, bot) => {
             chat.say(`Vui lòng đăng nhập và tham gia 1 phòng!`); return;
         }
         //main
-        let userRole = extractUserRole(data, userID);
-        if (data.state.status === 'waiting' || // phòng chờ
-            (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
-            data.state.dayStage === 'discuss' || // thảo luận
-            (data.state.dayStage === 'lastWord' && userID == data.roleInfo.victimID)) { // trăn trối / giẫy
+        var userRole;
+        if (!data || (data && data.state.status === 'waiting') || // phòng chờ / vừa join phòng
+            (data && (userRole = extractUserRole(data, userID)) && (
+                (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
+                data.state.dayStage === 'discuss' || // thảo luận
+                (data.state.dayStage === 'lastWord' && userID == data.roleInfo.victimID)// trăn trối / giẫy
+            ))
+        ) {
             // message_content
             userInstance.getInstance(joinID).sendMessage({
                 text: `${userID} gửi đính kèm...`,

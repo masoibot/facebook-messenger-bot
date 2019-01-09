@@ -136,10 +136,12 @@ module.exports = class UserInstance {
                         }
                     } else {
                         // chat from other
-                        let userRole = extractUserRole(data, userID);
-                        if (data.state.status === 'waiting' || // phòng chờ
-                            (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
-                            data.state.dayStage === 'discuss' // thảo luận
+                        var userRole;
+                        if (!data || (data && data.state.status === 'waiting') || // phòng chờ / vừa join phòng
+                            (data && (userRole = extractUserRole(data, userID)) && (
+                                (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
+                                data.state.dayStage === 'discuss' // thảo luận
+                            ))
                         ) {
                             if (message.sender.id !== currentUser.id) {
                                 if (message.attachment && message.attachment.type && message.attachment.link) {
