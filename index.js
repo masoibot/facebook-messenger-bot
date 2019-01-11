@@ -8,9 +8,9 @@ const { window } = new JSDOM();
 global.window = window;
 global.navigator = {};
 const bot = new BootBot({
-    accessToken: 'EAAETDDYKZBUMBACKOJrCOSDUpHZA5Rr5QUM7yfzZB4zyeZAcNied0YTan3ntZA6tYFRvLdEZCPv47sCjheEbrn0vj1VFgrPGi0LZA70Q06BS2BcLkfJKx0NFjv4QRPp3Qmhgwv7H8TgMG1ex79ZCRlZBxbK1FLbMkMtwl2di0lqtPAAZDZD',
+    accessToken: 'EAALw2mSPrm4BADklo8ZA9HoDAV0olXjSLGr8oZCMYlhMosQIDxZCAolTeqdr6nQ8cawguKmmdf5ZApkymhh0GqqpqkX8sQKaZCGbAA0ZAOcImJIVbfg6aJS5xIOjjB7JrMQeLovsamN15P7GmDPAl9F64VjqLOs8YgdJ6vcuZAajPFNpLyWd2mG',
     verifyToken: 'bautroixa',
-    appSecret: '51730441760157aa64ba6249824e429b'
+    appSecret: '9baffe75afd171b99ce7f7053a0a2340'
 });
 bot.setGreetingText("Chào mừng bạn đến với MA SÓI BOT bởi Phạm Ngọc Duy :3")
 bot.setGetStartedButton((payload, chat) => {

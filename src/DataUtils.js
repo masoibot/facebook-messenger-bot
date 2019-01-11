@@ -37,14 +37,18 @@ const phe = {
     "1": "DÂN",
 }
 
-const nextStageArr = {
+export const nextStageArr = {
+    "readyToGame": "cupid",
     "cupid": "night",
     "night": "superwolf",
     "superwolf": "witch",
     "witch": "discuss",
     "discuss": "vote",
-    "vote": "voteyesno",
-    "voteyesno": "cupid"
+    "vote": "voteResult",
+    "voteResult": "lastWord",
+    "lastWord": "voteYesNo",
+    "voteYesNo": "voteYesNoResult",
+    "voteYesNoResult": "cupid"
 }
 module.exports = {
     extractUserRole: extractUserRole,

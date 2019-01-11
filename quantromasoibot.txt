@@ -1,0 +1,5 @@
+const bot = new BootBot({
+    accessToken: 'EAALw2mSPrm4BADklo8ZA9HoDAV0olXjSLGr8oZCMYlhMosQIDxZCAolTeqdr6nQ8cawguKmmdf5ZApkymhh0GqqpqkX8sQKaZCGbAA0ZAOcImJIVbfg6aJS5xIOjjB7JrMQeLovsamN15P7GmDPAl9F64VjqLOs8YgdJ6vcuZAajPFNpLyWd2mG',
+    verifyToken: 'bautroixa',
+    appSecret: '9baffe75afd171b99ce7f7053a0a2340'
+});
