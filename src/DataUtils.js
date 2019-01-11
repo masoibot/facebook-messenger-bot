@@ -37,7 +37,7 @@ const phe = {
     "1": "DÂN",
 }
 
-export const nextStageArr = {
+const nextStageArr = {
     "readyToGame": "cupid",
     "cupid": "night",
     "night": "superwolf",
