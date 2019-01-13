@@ -81,7 +81,7 @@ module.exports = (userInstance, bot) => {
         } else {
             chat.say(`Bạn chưa tham gia phòng nào!`);
         }
-        console.log(`${userID} leave room with ID: ${room.id}`)
+        console.log(`${userID} leave room with ID: ${roomID}`)
     }
     bot.hear(/^\/leave$/, leaveCallback);
     bot.on('postback:LEAVE_ROOM', leaveCallback);
