@@ -74,6 +74,7 @@ module.exports = class UserInstance {
                     text: `Đăng nhập thất bại\nBạn có muốn đăng kí 1 tên?`,
                     quickReplies: ["/register"]
                 });
+                convo.end();
                 return;
             }
             console.log("chatMgr.connect error:", error.info.error);
