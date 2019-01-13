@@ -133,6 +133,7 @@ module.exports = class UserInstance {
                                 chat.say(`WARNING: bạn đang xem với tư cách khách!\n/join để tham gia phòng khác!`);
                             }
                         } catch (e) {
+                            console.log(e);
                             convo.say(`Tin nhắn chứa kí tự không hợp lệ: {}\nJSON_invalid_error`);
                         }
                     } else {

@@ -30,7 +30,7 @@ const actionButtons = [
             { type: 'postback', title: '🚫Ngắt kết nối /quit', payload: 'DISCONNECT' },
         ]
     },
-    { type: 'postback', title: '🎮Vote👥List', payload: 'VOTE' },
+    { type: 'postback', title: '🎮/vote👥', payload: 'VOTE' },
     {
         type: 'nested', title: '📥join🌟ready▶start...',
         call_to_actions: [
