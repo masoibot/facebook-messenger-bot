@@ -56,7 +56,7 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
                 notifyDeath += `🐺Nhớ rằng bạn là sói!\n`
             }
             if (coupleIndex != -1) {
-                notifyDeath += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}`;
+                notifyDeath += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}\n`;
             }
             notifyDeath += gameData.roleInfo.lastDeath.length === 0 ? `Đêm qua không ai chết cả` : gameData.roleInfo.lastDeath.map((deathID) => {
                 return `⚔${names[deathID]} đã chết`;
