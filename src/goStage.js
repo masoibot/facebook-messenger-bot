@@ -4,6 +4,8 @@ const { roleName, extractUserRole, isAlive } = require('./DataUtils');
 module.exports = function goStage(chat, gameData, userID, playerList) {
     var userRole = extractUserRole(gameData, userID);
     var names = gameData.players.names;
+    let coupleID = gameData.players.coupleID;
+    let coupleIndex = coupleID.indexOf(userID);
     switch (gameData.state.dayStage) {
         case 'readyToGame':
             let notifySetup = `Trò chơi đang bắt đầu\nSETUP GAME\n`
@@ -23,14 +25,12 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
             }
             break;
         case 'night':
-            let notify = ``;
-            let coupleID = gameData.players.coupleID;
-            let coupleIndex = coupleID.indexOf(userID);
+            let nightNotify = ``;
             if (coupleIndex != -1) {
-                notify += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}\n`;
+                nightNotify += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}\n`;
             }
             if (isAlive(gameData, userID)) { // còn sống
-                mainNightRole(chat, gameData, userID, userRole, playerList, notify);
+                mainNightRole(chat, gameData, userID, userRole, playerList, nightNotify);
             } else {
                 chat.say(`💀ĐÊM RỒI!\nĐêm nay bạn đã chết!`);
             }
@@ -55,8 +55,6 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
             if (superWolfVictimID === userID) {
                 notifyDeath += `🐺Nhớ rằng bạn là sói!\n`
             }
-            let coupleID = gameData.players.coupleID;
-            let coupleIndex = coupleID.indexOf(userID);
             if (coupleIndex != -1) {
                 notifyDeath += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}`;
             }
