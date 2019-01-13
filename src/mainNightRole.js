@@ -43,8 +43,8 @@ function voteConvo(chat, askSeq, timeout) {
     });
 }
 // all_vote
-function doNightRole(gameData, chat, userID, userRole, playerList) {
-    let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n`;
+function doNightRole(gameData, chat, userID, userRole, playerList, preText = '') {
+    let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n${preText}`;
     if (userRole == 1) { // là tiên tri
         voteConvo(chat, [{
             txt: `${pre_txt}Tiên tri muốn soi ai?`,
@@ -106,8 +106,8 @@ function doNightRole(gameData, chat, userID, userRole, playerList) {
     }
 }
 // MAIN
-function mainNightRole(chat, gameData, userID, userRole, playerList) {
-    let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n`;
+function mainNightRole(chat, gameData, userID, userRole, playerList, preText = '') {
+    let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n${preText}`;
     if (gameData.roleInfo.superWolfVictimID == userID) { // kẻ bị sói nguyền
         voteConvo(chat, [{
             txt: `${pre_txt}Sói muốn cắn ai?`,
@@ -119,17 +119,12 @@ function mainNightRole(chat, gameData, userID, userRole, playerList) {
                     convo.say(`=>${result}`);
                 };
                 doAsync();
-                doNightRole(gameData, chat, userID, userRole, playerList);
+                doNightRole(gameData, chat, userID, userRole, playerList, preText);
                 return 1;
             }
         }], gameData.state.stageEnd);
-        // chat.conversation(convo => {
-        //     doActionConvo(gameData, chat, convo, userID, userRole, playerList, sendVote, `${pre_txt}Sói muốn cắn ai?`, () => {
-        //         doNightRole(gameData, chat, userID, userRole, playerList);
-        //     });
-        // })
     } else {
-        doNightRole(gameData, chat, userID, userRole, playerList);
+        doNightRole(gameData, chat, userID, userRole, playerList, preText);
     }
 };
 // cupid stage

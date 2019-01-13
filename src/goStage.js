@@ -2,7 +2,8 @@ const { mainNightRole, doCupidRole, doSuperWolfRole, doWitchRole } = require('./
 const { roleName, extractUserRole, isAlive } = require('./DataUtils');
 
 module.exports = function goStage(chat, gameData, userID, playerList) {
-    let userRole = extractUserRole(gameData, userID);
+    var userRole = extractUserRole(gameData, userID);
+    var names = gameData.players.names;
     switch (gameData.state.dayStage) {
         case 'readyToGame':
             let notifySetup = `Trò chơi đang bắt đầu\nSETUP GAME\n`
@@ -18,44 +19,55 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
             if (userRole == 7) {
                 doCupidRole(chat, gameData, playerList);
             } else {
-                chat.say(`THẦN TÌNH YÊU đang phân vân...`);
+                chat.say(`👼THẦN TÌNH YÊU đang phân vân...`);
             }
             break;
         case 'night':
+            let notify = ``;
+            let coupleID = gameData.players.coupleID;
+            let coupleIndex = coupleID.indexOf(userID);
+            if (coupleIndex != -1) {
+                notify += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}\n`;
+            }
             if (isAlive(gameData, userID)) { // còn sống
-                mainNightRole(chat, gameData, userID, userRole, playerList);
+                mainNightRole(chat, gameData, userID, userRole, playerList, notify);
             } else {
-                chat.say(`ĐÊM RỒI!\nĐêm nay bạn đã chết!`);
+                chat.say(`💀ĐÊM RỒI!\nĐêm nay bạn đã chết!`);
             }
             break;
         case 'superwolf':
             if (userRole == -3) {
                 doSuperWolfRole(chat, gameData);
             } else {
-                chat.say(`SÓI NGUYỀN đang suy tính...`);
+                chat.say(`🐺SÓI NGUYỀN đang suy tính...`);
             }
             break;
         case 'witch':
             if (userRole == 5) {
                 doWitchRole(chat, gameData, playerList);
             } else {
-                chat.say(`PHÙ THỦY đang phù phép...`);
+                chat.say(`🧙‍PHÙ THỦY đang phù phép...`);
             }
             break;
         case 'discuss':
-            let notifyDeath = `TRỜI SÁNG RỒI!\n`;
+            let notifyDeath = `☀TRỜI SÁNG RỒI!\n`;
             let superWolfVictimID = gameData.roleInfo.superWolfVictimID;
             if (superWolfVictimID === userID) {
-                notifyDeath += `Nhớ rằng bạn là sói!\n`
+                notifyDeath += `🐺Nhớ rằng bạn là sói!\n`
+            }
+            let coupleID = gameData.players.coupleID;
+            let coupleIndex = coupleID.indexOf(userID);
+            if (coupleIndex != -1) {
+                notifyDeath += `💕Bạn cặp đôi với ${names[coupleID[coupleIndex == 1 ? 0 : 1]]}`;
             }
             notifyDeath += gameData.roleInfo.lastDeath.length === 0 ? `Đêm qua không ai chết cả` : gameData.roleInfo.lastDeath.map((deathID) => {
-                return `${gameData.players.names[deathID]} đã chết`;
+                return `⚔${names[deathID]} đã chết`;
             }).join('\n');
             chat.say(notifyDeath);
             break;
         case 'vote':
             chat.say({
-                text: `VOTE\nBạn muốn treo cổ ai?`,
+                text: `VOTE\nBạn muốn treo cổ ai?\n${Object.values(playerList).join('|')}`,
                 quickReplies: Object.values(playerList),
             });
             break;
@@ -67,11 +79,11 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
                 voteArr[targetID] ? voteArr[targetID]++ : voteArr[targetID] = 1;
             });
             voteResult += Object.keys(voteArr).map((targetID, index) => {
-                return `${index + 1}: ${gameData.players.names[targetID]} (${voteArr[targetID]} phiếu)`;
+                return `${index + 1}: ${names[targetID]} (${voteArr[targetID]} phiếu)`;
             }).join('\n')
             voteResult += `\n`;
             if (gameData.roleInfo.victimID !== "") {
-                voteResult += `${gameData.players.names[gameData.roleInfo.victimID]} có số vote nhiều nhất!`;
+                voteResult += `${names[gameData.roleInfo.victimID]} có số vote nhiều nhất!`;
             } else {
                 voteResult += `Không ai bị treo cổ!`;
             }
@@ -79,14 +91,14 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
             break;
         case 'lastWord':
             if (gameData.roleInfo.victimID !== "") {
-                chat.say(`${gameData.players.names[gameData.roleInfo.victimID]} LÊN THỚT!\nBạn có 1 phút thanh minh`);
+                chat.say(`${names[gameData.roleInfo.victimID]} LÊN THỚT!\nBạn có 1 phút thanh minh`);
             } else {
                 chat.say(`Người chơi lên thớt không hợp lệ!\nnull_victim_invalid_error`);
             }
             break;
         case 'voteYesNo':
             chat.say({
-                text: `TREO HAY THA?`,
+                text: `TREO HAY THA?\n/treo /tha`,
                 quickReplies: ["/treo", "/tha"],
             });
             break;
@@ -96,15 +108,15 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
             let victimID = gameData.roleInfo.victimID;
             Object.keys(gameData.roleTarget.voteList).filter((userID, index) => {
                 if (gameData.roleTarget.voteList[userID] === victimID) {
-                    listTreo = [...listTreo, gameData.players.names[userID]];
+                    listTreo = [...listTreo, names[userID]];
                 } else {
-                    listTha = [...listTha, gameData.players.names[userID]];
+                    listTha = [...listTha, names[userID]];
                 }
             });
             chat.say(`KẾT QUẢ THEO/THA:\n`
                 + `${listTreo.length} Treo: ${listTreo.join(", ")}\n`
                 + `${listTha.length} Tha: ${listTha.join(", ")}\n\n`
-                + `${gameData.players.names[victimID]} ${listTreo.length > listTha.length ? `đã bị treo cổ theo số đông!` : `vẫn được mọi người tin tưởng!`}`
+                + `${names[victimID]} ${listTreo.length > listTha.length ? `đã bị treo cổ theo số đông!` : `vẫn được mọi người tin tưởng!`}`
             );
     }
 }

@@ -128,10 +128,28 @@ module.exports = (userInstance, bot) => {
                 console.log('ready_request_error:', err);
             })
         } else {
-            chat.say(`Bạn không thể bắt đầu game!\nnot_login_join_or_ready_error`);
+            chat.say(`Bạn không thể bắt đầu game!\nBạn phải /ready trước!\nnot_login_join_or_ready_error`);
         }
         console.log(`${userID} start roomID: ${roomID}`);
     }
     bot.hear(/^\/start$/, startCallback);
     bot.on('postback:START', startCallback);
+
+    //start
+    const voteCallback = (payload, chat) => {
+        const joinID = payload.sender.id;
+        let userID = userInstance.getUserID(joinID);
+        let gameData = userInstance.getData(joinID);
+        let playerList = userInstance.getPlayerList(joinID);
+        if (userID && playerList && gameData) {
+            chat.say({
+                text: `Lựa chọn 1 người:\n${Object.values(playerList).join('|')}`,
+                quickReplies: Object.values(playerList),
+            });
+        } else {
+            chat.say(`Bạn chỉ có thể vote khi game đã bắt đầu!`);
+        }
+    }
+    bot.hear(/^\/vote$/, voteCallback);
+    bot.on('postback:VOTE', voteCallback);
 };
