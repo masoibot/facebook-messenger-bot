@@ -22,8 +22,23 @@ bot.setGetStartedButton((payload, chat) => {
     })
 });
 const actionButtons = [
-    { type: 'postback', title: '🎮Kết nối...', payload: 'CONNECT' },
-    { type: 'postback', title: '🚫Ngắt kết nối...', payload: 'DISCONNECT' }
+    {
+        type: 'nested', title: '📌login🔑register🚫quit...',
+        call_to_actions: [
+            { type: 'postback', title: '📌Đăng nhập /login', payload: 'CONNECT' },
+            { type: 'postback', title: '🔑Đăng kí! /register', payload: 'REGISTER' },
+            { type: 'postback', title: '🚫Ngắt kết nối /quit', payload: 'DISCONNECT' },
+        ]
+    },
+    { type: 'postback', title: '🎮Vote👥List', payload: 'VOTE' },
+    {
+        type: 'nested', title: '📥join🌟ready▶start...',
+        call_to_actions: [
+            { type: 'postback', title: '📥Tham gia /join', payload: 'JOIN_ROOM' },
+            { type: 'postback', title: '🌟Sẵn sàng /ready', payload: 'READY' },
+            { type: 'postback', title: '▶Bắt đầu chơi /start', payload: 'START' },
+        ]
+    },
 ];
 bot.setPersistentMenu(actionButtons, false);
 
