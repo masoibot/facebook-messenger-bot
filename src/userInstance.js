@@ -61,8 +61,8 @@ module.exports = class UserInstance {
         return newChatMgr.connect({
             onRemovedFromRoom: room => {
                 console.log("kicked out room");
-                this.leaveChat();
                 this.setRoomID(joinID, null);
+                this.leaveChat();
             }
         }).then(currentUser => {
             this.setUserID(joinID, userID);
@@ -72,7 +72,7 @@ module.exports = class UserInstance {
     }
     leaveChat(joinID) {
         var currentUser = this.getInstance(joinID);
-        if (currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
+        if (currentUser.roomSubscriptions && currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
             currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
         }
     }
@@ -83,9 +83,7 @@ module.exports = class UserInstance {
             return;
         }
         if (this.getRoomID(joinID)) {
-            if (currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
-                currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
-            }
+            this.leaveChat();
             chat.say(`Bạn đã rời phòng ${this.getRoomID(joinID)} để tham gia phòng ${roomID}!`);
         }
         currentUser.subscribeToRoom({
