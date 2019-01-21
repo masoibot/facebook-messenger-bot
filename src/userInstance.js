@@ -73,7 +73,7 @@ module.exports = class UserInstance {
     }
     leaveChat(joinID) {
         var currentUser = this.getInstance(joinID);
-        if (currentUser.roomSubscriptions && currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
+        if (currentUser && currentUser.roomSubscriptions && currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
             currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
         }
     }

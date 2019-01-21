@@ -17,7 +17,7 @@ module.exports = (userInstance, bot) => {
         var data = userInstance.getData(joinID);
         var userID = userInstance.getUserID(joinID);
         var roomID = userInstance.getRoomID(joinID);
-        if (!userID && !roomID) {
+        if (!userID || !roomID) {
             chat.say(`Vui lòng đăng nhập và tham gia 1 phòng!`); return;
         }
         // main
