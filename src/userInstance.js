@@ -61,8 +61,8 @@ module.exports = class UserInstance {
         return newChatMgr.connect({
             onRemovedFromRoom: room => {
                 console.log("kicked out room");
-                chat.say(`Bạn đã bị đẩy khỏi phòng do chưa sẵn sàng!`);
-                this.setRoomID(joinID, null);
+                chat.say(`Bạn đã rời khỏi phòng chơi!`);
+                this.setRoomID(joinID, undefined);
                 this.leaveChat();
             }
         }).then(currentUser => {
