@@ -16,20 +16,23 @@ module.exports = (userInstance, bot) => {
         sendRequest(`/room`).then(data => {
             let count = 0;
             let rooms = data.filter((r, i) => {
-                return count <= 10 && r.state.status == 'waiting' && ++count;
+                return count <= 10 && ++count;
             }).map((r) => {
                 let readyUserCount = Object.keys(r.players.ready).length;
-                return `${r.roomChatID}`;
+                return `${r.state.status == 'waiting'?'💤':'🎮'}${r.roomChatID}`;
             })
             chat.conversation((convo) => {
                 convo.ask({
                     text: `Chọn 1 phòng chơi: `,
-                    quickReplies: rooms
+                    quickReplies: ["/skip", ...rooms]
                 }, (payload, convo) => {
                     let roomID = payload.message ? payload.message.text.match(/[0-9]+/g) : null;
                     roomID = roomID ? payload.message.text.match(/[0-9]+/g)[0] : null;
                     if (!roomID) {
-                        convo.say(`🚫Phòng bạn vừa nhập không hợp lệ!`);
+                        convo.say({
+                            text: `🚫Bạn chưa chọn phòng nào!`,
+                            quickReplies: ["/join"]
+                        });
                         convo.end();
                         return;
                     }
