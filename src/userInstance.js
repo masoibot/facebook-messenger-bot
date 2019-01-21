@@ -83,7 +83,7 @@ module.exports = class UserInstance {
             hooks: {
                 onMessage: message => {
                     let userID = this.getUserID(joinID);
-                    if (message.text[0] === '{') {
+                    if (message.text[0] === '{' && message.sender.id === "botquantro") {
                         // data from server
                         try {
                             var res = JSON.parse(message.text);
@@ -93,10 +93,11 @@ module.exports = class UserInstance {
                                     return `${data.players.ready[u] ? `🌟` : `☆`}${i + 1}: ${data.players.names[u]}`;
                                 }).join("\n"));
                                 return;
-                            } else if (res.action == "endGame") {
-                                chat.say(`TRÒ CHƠI ĐÃ KẾT THÚC:\n${phe[data.roleWin]} THẮNG\n\n` + data.logs.join("\n"));
-                                return;
                             }
+                            // else if (res.action == "endGame") {
+                            //     chat.say(`TRÒ CHƠI ĐÃ KẾT THÚC:\n${phe[data.roleWin]} THẮNG\n\n` + data.logs.join("\n"));
+                            //     return;
+                            // }
                             if (data.players.allID.indexOf(userID) != -1) {
                                 this.setData(joinID, data); // lưu gameData
                                 let fullList = data.players.allID.filter((id) => { // lọc người còn sống
@@ -109,7 +110,7 @@ module.exports = class UserInstance {
                                 this.setPlayerList(joinID, playerList); // lưu lại mạng vote
                                 goStage(chat, data, userID, playerList);
                             } else {
-                                chat.say(`WARNING: bạn đang xem với tư cách khách!\n/join để tham gia phòng khác!`);
+                                chat.say(`WARNING: bạn đang xem với tư cách khách!\nVui lòng /quit và đăng nhập lại!`);
                             }
                         } catch (e) {
                             console.log(e);

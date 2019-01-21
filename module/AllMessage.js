@@ -21,12 +21,12 @@ module.exports = (userInstance, bot) => {
             chat.say(`Vui lòng đăng nhập và tham gia 1 phòng!`); return;
         }
         // main
-        if (data && data.state.status === 'ingame' && /\/(treo|tha)/.test(text)) {
+        if (data && data.state.status == 'ingame' && /\/(treo|tha)/.test(text)) {
             // treo/tha
             let treoOrTha = /\/treo/.test(text)
             let targetID = data.roleInfo.victimID;
             chat.say(await handleVoteID(data, userID, treoOrTha ? targetID : ""));
-        } else if (data && data.state.status === 'ingame' && /[0-9]+:.+|-1/g.test(text)) {
+        } else if (data && data.state.status == 'ingame' && /[0-9]+:.+|-1/g.test(text)) {
             // target_id
             let targetIndex = text.match(/[0-9]+/g)[0];
             let playerList = userInstance.getPlayerList(joinID);
@@ -35,11 +35,11 @@ module.exports = (userInstance, bot) => {
         } else {
             // tin nhắn
             var userRole;
-            if (!data || (data && data.state.status === 'waiting') || // phòng chờ / vừa join phòng
+            if (!data || (data && data.state.status == 'waiting') || // phòng chờ / vừa join phòng
                 (data && (userRole = extractUserRole(data, userID)) && (
-                    (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
-                    data.state.dayStage === 'discuss' || // thảo luận
-                    (data.state.dayStage === 'lastWord' && userID == data.roleInfo.victimID)// trăn trối / giẫy
+                    (data.state.dayStage == 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
+                    data.state.dayStage == 'discuss' || // thảo luận
+                    (data.state.dayStage == 'lastWord' && userID == data.roleInfo.victimID)// trăn trối / giẫy
                 ))
             ) {
                 // message_content
