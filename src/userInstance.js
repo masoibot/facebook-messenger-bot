@@ -58,7 +58,13 @@ module.exports = class UserInstance {
                 url: "https://us1.pusherplatform.io/services/chatkit_token_provider/v1/754dee8b-d6c4-41b4-a6d6-7105da589788/token"
             })
         });
-        return newChatMgr.connect().then(currentUser => {
+        return newChatMgr.connect({
+            onRemovedFromRoom: room => {
+                console.log("kicked out room");
+                this.leaveChat();
+                this.setRoomID(joinID, null);
+            }
+        }).then(currentUser => {
             this.setUserID(joinID, userID);
             this.setInstance(joinID, currentUser);
             return currentUser;
