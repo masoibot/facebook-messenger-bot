@@ -66,7 +66,9 @@ module.exports = class UserInstance {
     }
     leaveChat(joinID) {
         var currentUser = this.getInstance(joinID);
-        currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
+        if (currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
+            currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
+        }
     }
     subscribeChat(roomID, joinID, chat, convo) {
         var currentUser = this.getInstance(joinID);
@@ -75,7 +77,9 @@ module.exports = class UserInstance {
             return;
         }
         if (this.getRoomID(joinID)) {
-            currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
+            if (currentUser.roomSubscriptions[this.getRoomID(joinID)]) {
+                currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
+            }
             chat.say(`Bạn đã rời phòng ${this.getRoomID(joinID)} để tham gia phòng ${roomID}!`);
         }
         currentUser.subscribeToRoom({
