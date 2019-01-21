@@ -9,7 +9,7 @@ module.exports = (userInstance, bot) => {
             chat.conversation((convo) => {
                 convo.ask(`Nhập tên đăng nhập đã đăng kí:`, (payload, convo) => {
                     const userID = payload.message ? payload.message.text : "";
-                    userInstance.connectChat(userID, joinID).then(currentUser => {
+                    userInstance.connectChat(userID, joinID, chat).then(currentUser => {
                         console.log(`Login: ${userID}`);
                         convo.say({
                             text: `Bạn đã đăng nhập thành công!\nHãy /join 1 phòng chơi!`,

@@ -50,7 +50,7 @@ module.exports = class UserInstance {
     module(factory, bot) {
         return factory.apply(this, [this, bot]);
     }
-    connectChat(userID, joinID) {
+    connectChat(userID, joinID, chat) {
         var newChatMgr = new ChatManager({
             instanceLocator: "v1:us1:754dee8b-d6c4-41b4-a6d6-7105da589788",
             userId: userID,
@@ -61,6 +61,7 @@ module.exports = class UserInstance {
         return newChatMgr.connect({
             onRemovedFromRoom: room => {
                 console.log("kicked out room");
+                chat.say(`Bạn đã bị đẩy khỏi phòng do chưa sẵn sàng!`);
                 this.setRoomID(joinID, null);
                 this.leaveChat();
             }
