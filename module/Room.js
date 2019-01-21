@@ -26,7 +26,8 @@ module.exports = (userInstance, bot) => {
                     text: `Chọn 1 phòng chơi: `,
                     quickReplies: rooms
                 }, (payload, convo) => {
-                    let roomID = payload.message ? payload.message.text.match(/[0-9]+/g)[0] : null;
+                    let roomID = payload.message ? payload.message.text.match(/[0-9]+/g) : null;
+                    roomID = roomID ? payload.message.text.match(/[0-9]+/g)[0] : null;
                     if (!roomID) {
                         convo.say(`🚫Phòng bạn vừa nhập không hợp lệ!`);
                         convo.end();
