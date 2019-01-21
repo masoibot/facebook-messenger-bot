@@ -49,10 +49,12 @@ const userInstance = new UserInstance();
 const loginModule = require('./module/Login');
 const allMessage = require('./module/AllMessage');
 const roomModule = require('./module/Room');
+const extModule = require('./module/Extension');
 
 // use module
 userInstance.module(loginModule, bot);
 userInstance.module(allMessage, bot);
 userInstance.module(roomModule, bot);
+userInstance.module(extModule, bot);
 
 bot.start(process.env.PORT || 3000);

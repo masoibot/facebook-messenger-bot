@@ -7,12 +7,31 @@ module.exports = (userInstance, bot) => {
         var currentUser = userInstance.getInstance(joinID);
         if (!currentUser) {
             chat.conversation((convo) => {
-                convo.ask(`Nhập tên đã đăng kí:`, (payload, convo) => {
+                convo.ask(`Nhập tên đăng nhập đã đăng kí:`, (payload, convo) => {
                     const userID = payload.message ? payload.message.text : "";
-                    userInstance.connectChat(userID, joinID, convo)
-                    // .then((currentUser) => {
-                    //     userInstance.subscribeChat("20509498", joinID, chat, convo);
-                    // });
+                    userInstance.connectChat(userID, joinID).then(currentUser => {
+                        console.log(`Login: ${userID}`);
+                        convo.say({
+                            text: `Bạn đã đăng nhập thành công!\nHãy /join 1 phòng chơi!`,
+                            quickReplies: ["/join"]
+                        });
+                        convo.end();
+                    }).catch(error => {
+                        if (error.info && error.info.error && error.info.error == "services/chatkit/not_found/user_not_found") {
+                            convo.say({
+                                text: `Tên đăng nhập chưa được đăng kí\nBạn có muốn đăng kí?`,
+                                quickReplies: ["/register"]
+                            });
+                            convo.end();
+                            return;
+                        }
+                        console.log("chatMgr.connect error:", error.info.error);
+                        convo.say({
+                            text: `Đăng nhập thất bại\nchatMgr.connect_err`,
+                            quickReplies: ["/login"]
+                        });
+                        convo.end();
+                    })
                 });
             });
         } else {
@@ -37,7 +56,7 @@ module.exports = (userInstance, bot) => {
         var currentUser = userInstance.getInstance(joinID);
         if (!currentUser) {
             chat.conversation((convo) => {
-                convo.ask(`Đăng kí 1 tên (viết liền không dấu):\nVD: duy`, (payload, convo) => {
+                convo.ask(`Nhập tên đăng nhập muốn đăng kí (viết liền không dấu):\nVD: duy, phamduy, pnduy`, (payload, convo) => {
                     const userID = payload.message ? payload.message.text : "";
                     chat.getUserProfile().then((user) => {
                         console.log("REG: ", { id: userID, name: `${user.first_name} ${user.last_name}`, avatar: user.profile_pic });
@@ -45,7 +64,7 @@ module.exports = (userInstance, bot) => {
                             if (data.success) {
                                 convo.say({
                                     text: `Bạn đã đăng kí thành công!\nVui lòng đăng nhập!`,
-                                    quickReplies: ["/login"]
+                                    quickReplies: ["/login", "/tải_app"]
                                 })
                                 convo.end();
                             } else {

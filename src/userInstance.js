@@ -50,7 +50,7 @@ module.exports = class UserInstance {
     module(factory, bot) {
         return factory.apply(this, [this, bot]);
     }
-    connectChat(userID, joinID, convo) {
+    connectChat(userID, joinID) {
         var newChatMgr = new ChatManager({
             instanceLocator: "v1:us1:754dee8b-d6c4-41b4-a6d6-7105da589788",
             userId: userID,
@@ -61,28 +61,7 @@ module.exports = class UserInstance {
         return newChatMgr.connect().then(currentUser => {
             this.setUserID(joinID, userID);
             this.setInstance(joinID, currentUser);
-            console.log(`Login: ${userID}`);
-            convo.say({
-                text: `Bạn đã đăng nhập thành công!\nHãy /join 1 phòng chơi!`,
-                quickReplies: ["/join"]
-            });
-            convo.end();
             return currentUser;
-        }).catch(error => {
-            if (error.info && error.info.error && error.info.error == "services/chatkit/not_found/user_not_found") {
-                convo.say({
-                    text: `Đăng nhập thất bại\nBạn có muốn đăng kí 1 tên?`,
-                    quickReplies: ["/register"]
-                });
-                convo.end();
-                return;
-            }
-            console.log("chatMgr.connect error:", error.info.error);
-            convo.say({
-                text: `Đăng nhập thất bại\nchatMgr.connect_err`,
-                quickReplies: ["/login"]
-            });
-            convo.end();
         })
     }
     leaveChat(joinID) {
