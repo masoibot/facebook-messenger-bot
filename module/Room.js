@@ -54,10 +54,12 @@ module.exports = (userInstance, bot) => {
                                     convo.end();
                                 })
                         } else {
-                            chat.say(`🚫Có thể phòng đang chơi!\nVui lòng thử lại sau!\njoin_room_err`)
+                            convo.say(`🚫Phòng đang chơi!\nVui lòng thử lại sau!\njoin_room_err`)
+                            convo.end();
                         }
                     }).catch(err => {
                         console.log(`join_room_request_err:`, err);
+                        convo.end();
                     })
                 });
             });
