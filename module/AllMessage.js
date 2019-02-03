@@ -14,6 +14,7 @@ module.exports = (userInstance, bot) => {
             });
             return;
         }
+        var chatInstance = userInstance.getInstance(joinID);
         var data = userInstance.getData(joinID);
         var userID = userInstance.getUserID(joinID);
         var roomID = userInstance.getRoomID(joinID);
@@ -25,13 +26,13 @@ module.exports = (userInstance, bot) => {
             // treo/tha
             let treoOrTha = /\/treo/.test(text)
             let targetID = data.roleInfo.victimID;
-            chat.say(await handleVoteID(data, userID, treoOrTha ? targetID : ""));
+            chat.say(await handleVoteID(chatInstance, data, userID, treoOrTha ? targetID : ""));
         } else if (data && data.state.status == 'ingame' && /[0-9]+:.+|-1/g.test(text)) {
             // target_id
             let targetIndex = text.match(/[0-9]+/g)[0];
             let playerList = userInstance.getPlayerList(joinID);
             let targetID = Object.keys(playerList)[targetIndex];
-            chat.say(await handleVoteID(data, userID, targetID));
+            chat.say(await handleVoteID(chatInstance, data, userID, targetID));
         } else {
             // tin nhắn
             var userRole;
@@ -43,7 +44,7 @@ module.exports = (userInstance, bot) => {
                 ))
             ) {
                 // message_content
-                userInstance.getInstance(joinID).sendMessage({
+                chatInstance.sendMessage({
                     text: text,
                     roomId: roomID,
                 }).catch(err => {

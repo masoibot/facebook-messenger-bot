@@ -43,7 +43,7 @@ function voteConvo(chat, askSeq, timeout) {
     });
 }
 // all_vote
-function doNightRole(gameData, chat, userID, userRole, playerList, preText = '') {
+function doNightRole(roomID, gameData, chat, userID, userRole, playerList, preText = '') {
     let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n${preText}`;
     if (userRole == 1) { // là tiên tri
         voteConvo(chat, [{
@@ -51,7 +51,7 @@ function doNightRole(gameData, chat, userID, userRole, playerList, preText = '')
             qreply: Object.values(playerList),
             callback: (convo, index, resTxt) => {
                 let targetID = resTxt.match(/[0-9]+/g)[0];
-                let result = sendSee(gameData, Object.keys(playerList)[targetID], userID);
+                let result = sendSee(roomID, gameData, Object.keys(playerList)[targetID], userID);
                 convo.say(`=>${result}`);
                 return 1;
             }
@@ -91,10 +91,12 @@ function doNightRole(gameData, chat, userID, userRole, playerList, preText = '')
                     return null;
                 }
                 if (type == 1) { // ghim
-                    sendFire(Object.keys(playerList)[voteID], false);
+                    sendFire(roomID, Object.keys(playerList)[voteID], false);
+                    convo.say("Xong!");
                     return true;
                 } else if (type == 2) { // bắn
-                    sendFire(Object.keys(playerList)[voteID], true);
+                    sendFire(roomID, Object.keys(playerList)[voteID], true);
+                    convo.say("Xong!");
                     return true;
                 } else {
                     return null;
@@ -106,7 +108,7 @@ function doNightRole(gameData, chat, userID, userRole, playerList, preText = '')
     }
 }
 // MAIN
-function mainNightRole(chat, gameData, userID, userRole, playerList, preText = '') {
+function mainNightRole(chat, roomID, gameData, userID, userRole, playerList, preText = '') {
     let pre_txt = `ĐÊM THỨ ${gameData.state.day}\n${preText}`;
     if (gameData.roleInfo.superWolfVictimID == userID) { // kẻ bị sói nguyền
         voteConvo(chat, [{
@@ -115,20 +117,20 @@ function mainNightRole(chat, gameData, userID, userRole, playerList, preText = '
             callback: (convo, index, resTxt) => {
                 let targetID = resTxt.match(/[0-9]+/g)[0];
                 var doAsync = async () => {
-                    let result = await sendVote(gameData, Object.keys(playerList)[targetID], userID);
+                    let result = await sendVote(roomID, gameData, Object.keys(playerList)[targetID], userID);
                     convo.say(`=>${result}`);
                 };
                 doAsync();
-                doNightRole(gameData, chat, userID, userRole, playerList, preText);
+                doNightRole(roomID, gameData, chat, userID, userRole, playerList, preText);
                 return 1;
             }
         }], gameData.state.stageEnd);
     } else {
-        doNightRole(gameData, chat, userID, userRole, playerList, preText);
+        doNightRole(roomID, gameData, chat, userID, userRole, playerList, preText);
     }
 };
 // cupid stage
-function doCupidRole(chat, gameData, playerList) {
+function doCupidRole(chat, roomID, gameData, playerList) {
     let pre_txt = `ĐÊM THỨ ${gameData.state.day}: `;
     voteConvo(chat, [{
         txt: `${pre_txt}GHÉP ĐÔI\nChọn người thứ nhất:`,
@@ -149,7 +151,7 @@ function doCupidRole(chat, gameData, playerList) {
             if (/[0-9]+:.+/g.test(resTxt)) {
                 let user2ID = resTxt.match(/[0-9]+/g)[0];
                 var doAsync = async () => {
-                    let result = await sendCupid(Object.keys(playerList)[user1ID], Object.keys(playerList)[user2ID]);
+                    let result = await sendCupid(roomID, Object.keys(playerList)[user1ID], Object.keys(playerList)[user2ID]);
                     convo.say(`=>${result}`);
                 };
                 doAsync();
@@ -161,7 +163,7 @@ function doCupidRole(chat, gameData, playerList) {
         }
     }], gameData.state.stageEnd)
 }
-function doSuperWolfRole(chat, gameData) {
+function doSuperWolfRole(chat, roomID, gameData) {
     let victimID = gameData.roleInfo.victimID;
     if (victimID != "") {
         voteConvo(chat, [{
@@ -170,7 +172,7 @@ function doSuperWolfRole(chat, gameData) {
             callback: (convo, index, resTxt) => {
                 if (/^nguyen$/.test(resTxt)) {
                     var doAsync = async () => {
-                        let result = await sendSuperWolf(victimID);
+                        let result = await sendSuperWolf(roomID, victimID);
                         convo.say(`=>${result}`);
                     };
                     doAsync();
@@ -183,14 +185,14 @@ function doSuperWolfRole(chat, gameData) {
             }
         }], gameData.state.stageEnd);
     } else {
-        if (gameData.roleInfo.superWolfVictimID!="") {
+        if (gameData.roleInfo.superWolfVictimID != "") {
             chat.say(`SÓI NGUYỀN\nBạn đã nguyền rồi!`);
         } else {
             chat.say(`SÓI NGUYỀN\nKhông có ma nào chết cả :v`);
         }
     }
 }
-function doWitchRole(chat, gameData, playerList) {
+function doWitchRole(chat, roomID, gameData, playerList) {
     let victimID = gameData.roleInfo.victimID;
     let convoArr = [];
     if (victimID != "" && gameData.roleInfo.witchSaveRemain) {
@@ -200,12 +202,17 @@ function doWitchRole(chat, gameData, playerList) {
             callback: (convo, index, resTxt) => {
                 if (/^cuu$/.test(resTxt)) {
                     var doAsync = async () => {
-                        let result = await sendWitchSave();
-                        convo.say(`=>${result}`);
+                        let result = await sendWitchSave(roomID);
+                        if (!gameData.roleInfo.witchKillRemain) {
+                            convo.say(`=>${result}`);
+                        }
                     };
                     doAsync();
                     return 1;
                 } else if (/^khong$/.test(resTxt)) {
+                    if (!gameData.roleInfo.witchKillRemain) {
+                        convo.say(`=>Bạn đã chọn không cứu!`);
+                    }
                     return 1;
                 } else {
                     return null;
@@ -215,7 +222,7 @@ function doWitchRole(chat, gameData, playerList) {
     }
     if (gameData.roleInfo.witchKillRemain) {
         convoArr = [...convoArr, {
-            txt: "PHÙ THỦY\nBạn muốn giết ai không?",
+            txt: "PHÙ THỦY\nBạn muốn giết ai không?\nĐể không giết ai, ko bấm gì hết và đợi hết giờ!",
             qreply: ["-1: Không", ...Object.values(playerList)],
             callback: (convo, index, resTxt) => {
                 let voteID;
@@ -223,13 +230,14 @@ function doWitchRole(chat, gameData, playerList) {
                     voteID = resTxt.match(/-?[0-9]+/g)[0];
                     if (voteID != -1) {
                         var doAsync = async () => {
-                            let result = await sendWitchKill(Object.keys(playerList)[voteID]);
+                            let result = await sendWitchKill(roomID, Object.keys(playerList)[voteID]);
                             convo.say(`=>${result}`);
                         };
                         doAsync();
                     }
                     return 1;
                 } else {
+                    convo.say(`=>Bạn chưa quyết định giết ai!`);
                     return null;
                 }
             }

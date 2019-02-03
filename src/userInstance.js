@@ -1,6 +1,7 @@
 const { ChatManager, TokenProvider } = require('@pusher/chatkit-client');
 const goStage = require('../src/goStage');
 const { isAlive, phe, extractUserRole } = require('../src/DataUtils');
+const { checkReceiveChat } = require("./ChatUtils");
 
 module.exports = class UserInstance {
     constructor() {
@@ -77,6 +78,24 @@ module.exports = class UserInstance {
             currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
         }
     }
+    chatSayMessage(chat, userID, message) {
+        if (message.sender.id !== userID) {
+            if (message.attachment && message.attachment.type && message.attachment.link) {
+                // attachment
+                console.log(`${message.sender.name}: attachment`);
+                chat.say([`${message.sender.name} đã gửi...`, {
+                    attachment: message.attachment.type,
+                    url: message.attachment.link
+                }])
+            } else {
+                // text
+                console.log(`${message.sender.name}: ${message.text}`);
+                chat.say(`${message.sender.name}:\n${message.text}`);
+            }
+        } else {
+            chat.sendAction('mark_seen');
+        }
+    }
     subscribeChat(roomID, joinID, chat, convo) {
         var currentUser = this.getInstance(joinID);
         if (!currentUser) {
@@ -92,63 +111,86 @@ module.exports = class UserInstance {
             hooks: {
                 onMessage: message => {
                     let userID = this.getUserID(joinID);
+                    var data = this.getData(joinID);
+                    var userRole = data && data.setup ? extractUserRole(data, userID) : 4;
+                    var userAlive = data ? isAlive(data, userID) : false;
                     if (message.text[0] === '{' && message.sender.id === "botquantro") {
                         // data from server
                         try {
                             var res = JSON.parse(message.text);
-                            var data = res.data;
+                            data = res.data;
+                            let action = res.action;
+                            let text = res.text;
                             if (res.action == "ready") {
                                 chat.say(`PHÒNG ${roomID}\n` + Object.keys(data.players.ready).map((u, i) => {
                                     return `${data.players.ready[u] ? `🌟` : `☆`}${i + 1}: ${data.players.names[u]}`;
                                 }).join("\n"));
                                 return;
                             }
-                            // else if (res.action == "endGame") {
-                            //     chat.say(`TRÒ CHƠI ĐÃ KẾT THÚC:\n${phe[data.roleWin]} THẮNG\n\n` + data.logs.join("\n"));
-                            //     return;
-                            // }
-                            if (data.players.allID.indexOf(userID) != -1) {
-                                this.setData(joinID, data); // lưu gameData
-                                let fullList = data.players.allID.filter((id) => { // lọc người còn sống
-                                    return isAlive(data, id);
-                                });
-                                var playerList = fullList.reduce((plist, p, index) => { // chuyển sang mảng vote [id: name]
-                                    plist[p] = `${index}: ${data.players.names[p]}`;
-                                    return plist;
-                                }, {});
-                                this.setPlayerList(joinID, playerList); // lưu lại mạng vote
-                                goStage(chat, data, userID, playerList);
-                            } else {
-                                chat.say(`WARNING: bạn đang xem với tư cách khách!\nVui lòng /quit và đăng nhập lại!`);
+                            this.setData(joinID, data); // lưu gameData
+                            let fullList = data.players.allID.filter((id) => { // lọc người còn sống
+                                return isAlive(data, id);
+                            });
+                            var playerList = fullList.reduce((plist, p, index) => { // chuyển sang mảng vote [id: name]
+                                plist[p] = `${index}: ${data.players.names[p]}`;
+                                return plist;
+                            }, {});
+                            this.setPlayerList(joinID, playerList); // lưu lại mạng vote
+                            if (text != "") {
+                                chat.say("```" + text + "```");
                             }
+                            goStage(chat, data, userID, playerList);
+
                         } catch (e) {
                             console.log(e);
                             convo.say(`Tin nhắn chứa kí tự không hợp lệ: {}\nJSON_invalid_error`);
                         }
+                    } else if (message.text[0] === '[') {
+                        try {//is voteList from other
+                            let content = JSON.parse(message.text)
+                            var dayStage = data.state.dayStage;
+                            if (dayStage == 'night' || dayStage == 'vote' || dayStage == 'voteYesNo') {
+                                data = {
+                                    ...data, roleTarget: {
+                                        ...data.roleTarget,
+                                        voteList: {
+                                            ...data.roleTarget.voteList,
+                                            [message.sender.id]: content[0].targetID
+                                        }
+                                    }
+                                }
+                            }
+                            if (checkReceiveChat(data, userID, userRole, userAlive)) {
+                                this.chatSayMessage(chat, currentUser.id, {
+                                    text: content[0].text,
+                                    sender: {
+                                        id: message.sender.id,
+                                        name: message.sender.name
+                                    }
+                                });
+                            }
+                        } catch (err) {
+                            // console.log("receive_JSON_err", err);
+                        }
                     } else {
                         // chat from other
-                        var userRole;
-                        if (!data || (data && data.state.status === 'waiting') || // phòng chờ / vừa join phòng
-                            (data && (userRole = extractUserRole(data, userID)) && (
-                                (data.state.dayStage === 'night' && (userRole == -1 || userRole == -3 || userID == data.roleInfo.superWolfVictimID)) || // đêm là sói
-                                data.state.dayStage === 'discuss' // thảo luận
-                            ))
-                        ) {
-                            if (message.sender.id !== currentUser.id) {
-                                if (message.attachment && message.attachment.type && message.attachment.link) {
-                                    // attachment
-                                    chat.say([`${message.sender.name} đã gửi...`, {
-                                        attachment: message.attachment.type,
-                                        url: message.attachment.link
-                                    }])
-                                } else {
-                                    // text
-                                    chat.say(`${message.sender.name}: ${message.text}`);
-                                    console.log(`${message.sender.name}: ${message.text}`);
-                                }
-                            } else {
-                                chat.sendAction('mark_seen');
-                            }
+                        if (checkReceiveChat(data, userID, userRole, userAlive)) {
+                            this.chatSayMessage(chat, currentUser.id, message);
+                            // if (message.sender.id !== currentUser.id) {
+                            //     if (message.attachment && message.attachment.type && message.attachment.link) {
+                            //         // attachment
+                            //         chat.say([`${message.sender.name} đã gửi...`, {
+                            //             attachment: message.attachment.type,
+                            //             url: message.attachment.link
+                            //         }])
+                            //     } else {
+                            //         // text
+                            //         chat.say(`${message.sender.name}:\n${message.text}`);
+                            //         console.log(`${message.sender.name}: ${message.text}`);
+                            //     }
+                            // } else {
+                            //     chat.sendAction('mark_seen');
+                            // }
                         }
                     }
                 }
