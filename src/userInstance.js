@@ -1,6 +1,6 @@
 const { ChatManager, TokenProvider } = require('@pusher/chatkit-client');
 const goStage = require('../src/goStage');
-const { isAlive, phe, extractUserRole } = require('../src/DataUtils');
+const { isAlive, isWolf, phe, extractUserRole } = require('../src/DataUtils');
 const { checkReceiveChat } = require("./ChatUtils");
 
 module.exports = class UserInstance {
@@ -137,8 +137,11 @@ module.exports = class UserInstance {
                             let fullList = data.players.allID.filter((id) => { // lọc người còn sống
                                 return isAlive(data, id);
                             });
+                            let userIsWolf = isWolf(data, userID);
+                            let coupleIndex = data.players.coupleID.indexOf(userID); //user_index
+                            coupleIndex = coupleIndex != -1 ? (coupleIndex == 0 ? 1 : 0) : -1; //partner_index
                             var playerList = fullList.reduce((plist, p, index) => { // chuyển sang mảng vote [id: name]
-                                plist[p] = `${index}: ${data.players.names[p]}`;
+                                plist[p] = `${userIsWolf ? (isWolf(data, p) ? "🐺" : "🎅") : ""}${coupleIndex != -1 ? "❤" : ""}${index}: ${data.players.names[p]}`;
                                 return plist;
                             }, {});
                             this.setPlayerList(joinID, playerList); // lưu lại mạng vote

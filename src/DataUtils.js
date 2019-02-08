@@ -11,7 +11,12 @@ function extractUserRole(gameData, userID) {
     return ret;
 }
 function isAlive(gameData, userID) {
+    if (!gameData || !gameData.roleInfo || !gameData.roleInfo.deathList) return true;
     return gameData.roleInfo.deathList.indexOf(userID) == -1;
+}
+function isWolf(gameData, userID) {
+    if (!gameData || !gameData.players || !gameData.players.wolfsID) return false;
+    return gameData.players.wolfsID.indexOf(userID) != -1;
 }
 const roleName = {
     // PHE SÓI
@@ -74,5 +79,6 @@ module.exports = {
     roleImage: roleImage,
     nextStageArr: nextStageArr,
     isAlive: isAlive,
+    isWolf: isWolf,
     phe: phe
 }
