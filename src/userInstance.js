@@ -82,7 +82,7 @@ module.exports = class UserInstance {
         if (isNaN(timeLeft) || timeLeft < 0) return "";
         var minute = Math.floor(timeLeft / 60);
         var second = timeLeft % 60;
-        return `[${minute > 0 ? `${minute}:` : ""}${second}] `;
+        return `[${minute > 0 ? `${minute}:` : "0:"}${second < 10 ? `0${second}` : `${second}`}] `;
     }
     chatSayMessage(chat, userID, message, timeLeft = -1) {
         if (message.sender.id !== userID) {
@@ -170,8 +170,11 @@ module.exports = class UserInstance {
                                 this.setData(joinID, data); // lưu gameData
                             }
                             if (checkReceiveChat(data, userID, userRole, userAlive)) {
-                                let timeLeft = (new Date(data.state.stageEnd) - new Date(Date.now())) / 1000;
-                                timeLeft = Math.floor(timeLeft);
+                                let timeLeft = -1;
+                                if (data && data.state && data.state.stageEnd != "") {
+                                    timeLeft = (new Date(data.state.stageEnd) - new Date(Date.now())) / 1000;
+                                    timeLeft = Math.floor(timeLeft);
+                                }
                                 this.chatSayMessage(chat, currentUser.id, {
                                     text: content[0].text,
                                     sender: {
@@ -186,7 +189,12 @@ module.exports = class UserInstance {
                     } else {
                         // chat from other
                         if (checkReceiveChat(data, userID, userRole, userAlive)) {
-                            this.chatSayMessage(chat, currentUser.id, message);
+                            let timeLeft = -1;
+                            if (data && data.state && data.state.stageEnd != "") {
+                                timeLeft = (new Date(data.state.stageEnd) - new Date(Date.now())) / 1000;
+                                timeLeft = Math.floor(timeLeft);
+                            }
+                            this.chatSayMessage(chat, currentUser.id, message, timeLeft);
                             // if (message.sender.id !== currentUser.id) {
                             //     if (message.attachment && message.attachment.type && message.attachment.link) {
                             //         // attachment
