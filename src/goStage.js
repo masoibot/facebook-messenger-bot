@@ -1,5 +1,5 @@
 const { mainNightRole, doCupidRole, doSuperWolfRole, doWitchRole } = require('./mainNightRole');
-const { roleName, extractUserRole, isAlive } = require('./DataUtils');
+const { roleName, roleImage, extractUserRole, isAlive } = require('./DataUtils');
 
 module.exports = function goStage(chat, gameData, userID, playerList) {
     var userRole = extractUserRole(gameData, userID);
@@ -8,16 +8,25 @@ module.exports = function goStage(chat, gameData, userID, playerList) {
     let coupleID = gameData.players.coupleID;
     let coupleIndex = coupleID.indexOf(userID);
     switch (gameData.state.dayStage) {
-        // case 'readyToGame':
-        //     let notifySetup = `Trò chơi đang bắt đầu\nSETUP GAME\n`
-        //     Object.keys(gameData.setup).forEach(key => {
-        //         if (gameData.setup[key].length > 0) {
-        //             notifySetup += `${gameData.setup[key].length} ${roleName[key]}\n`;
-        //         }
-        //     });
-        //     notifySetup += `Bạn là ${roleName[userRole]}\n`;
-        //     chat.say(notifySetup);
-        //     break;
+        case 'readyToGame':
+            chat.sendMessage({
+                attachment: {
+                    type: "template",
+                    payload: {
+                        template_type: "media",
+                        elements: [{
+                            media_type: "image",
+                            url: roleImage[userRole],
+                            buttons: [{
+                                type: "web_url",
+                                url: roleImage[userRole],
+                                title: roleName[userRole],
+                            }]
+                        }]
+                    }
+                }
+            });
+            break;
         case 'cupid':
             if (userRole == 7) {
                 doCupidRole(chat, roomID, gameData, playerList);

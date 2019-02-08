@@ -30,6 +30,23 @@ const roleName = {
     "8": '👽NGƯỜI HÓA SÓI',
     "9": '🧚‍THIÊN SỨ',
 }
+const roleImage = {
+    // PHE SÓI
+    "-1": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278418034541',
+    "-2": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278411367875',
+    "-3": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1897745170521199',
+
+    // PHE DÂN
+    "1": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278528034530',
+    "2": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278331367883',
+    "3": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278518034531',
+    "4": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278298034553',
+    "5": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278464701203',
+    "6": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278381367878',
+    "7": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1889278324701217',
+    "8": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1891874781108238',
+    "9": 'https://www.facebook.com/masoibot/photos/pcb.1889279921367724/1903763679919348',
+}
 const phe = {
     "9": "Thiên sứ",
     "3": "Cặp đôi",
@@ -50,9 +67,11 @@ const nextStageArr = {
     "voteYesNo": "voteYesNoResult",
     "voteYesNoResult": "cupid"
 }
+
 module.exports = {
     extractUserRole: extractUserRole,
     roleName: roleName,
+    roleImage: roleImage,
     nextStageArr: nextStageArr,
     isAlive: isAlive,
     phe: phe

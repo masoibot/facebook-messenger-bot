@@ -78,19 +78,25 @@ module.exports = class UserInstance {
             currentUser.roomSubscriptions[this.getRoomID(joinID)].cancel();
         }
     }
-    chatSayMessage(chat, userID, message) {
+    timeLeftToString(timeLeft) {
+        if (isNaN(timeLeft) || timeLeft < 0) return "";
+        var minute = Math.floor(timeLeft / 60);
+        var second = timeLeft % 60;
+        return `[${minute > 0 ? `${minute}:` : ""}${second}] `;
+    }
+    chatSayMessage(chat, userID, message, timeLeft = -1) {
         if (message.sender.id !== userID) {
             if (message.attachment && message.attachment.type && message.attachment.link) {
                 // attachment
                 console.log(`${message.sender.name}: attachment`);
-                chat.say([`${message.sender.name} đã gửi...`, {
+                chat.say([`${this.timeLeftToString(timeLeft)}${message.sender.name} đã gửi...`, {
                     attachment: message.attachment.type,
                     url: message.attachment.link
                 }])
             } else {
                 // text
                 console.log(`${message.sender.name}: ${message.text}`);
-                chat.say(`${message.sender.name}:\n${message.text}`);
+                chat.say(`${this.timeLeftToString(timeLeft)}${message.sender.name}:\n${message.text}`);
             }
         } else {
             chat.sendAction('mark_seen');
@@ -104,7 +110,7 @@ module.exports = class UserInstance {
         }
         if (this.getRoomID(joinID)) {
             this.leaveChat();
-            chat.say(`Bạn đã rời phòng ${this.getRoomID(joinID)} để tham gia phòng ${roomID}!`);
+            chat.say(`ℹ️Bạn đã rời phòng ${this.getRoomID(joinID)} để tham gia phòng ${roomID}!`);
         }
         currentUser.subscribeToRoom({
             roomId: roomID,
@@ -121,7 +127,7 @@ module.exports = class UserInstance {
                             data = res.data;
                             let action = res.action;
                             let text = res.text;
-                            if (res.action == "ready") {
+                            if (action == "ready") {
                                 chat.say(`PHÒNG ${roomID}\n` + Object.keys(data.players.ready).map((u, i) => {
                                     return `${data.players.ready[u] ? `🌟` : `☆`}${i + 1}: ${data.players.names[u]}`;
                                 }).join("\n"));
@@ -137,13 +143,15 @@ module.exports = class UserInstance {
                             }, {});
                             this.setPlayerList(joinID, playerList); // lưu lại mạng vote
                             if (text != "") {
-                                chat.say("```" + text + "```");
+                                chat.say("```\n" + text + "\n```").then(() => {
+                                    goStage(chat, data, userID, playerList);
+                                })
+                            } else {
+                                goStage(chat, data, userID, playerList);
                             }
-                            goStage(chat, data, userID, playerList);
-
                         } catch (e) {
                             console.log(e);
-                            convo.say(`Tin nhắn chứa kí tự không hợp lệ: {}\nJSON_invalid_error`);
+                            convo.say(`MÀN HÌNH XANH HIỆN LÊN\nJSON_invalid_error`);
                         }
                     } else if (message.text[0] === '[') {
                         try {//is voteList from other
@@ -159,15 +167,18 @@ module.exports = class UserInstance {
                                         }
                                     }
                                 }
+                                this.setData(joinID, data); // lưu gameData
                             }
                             if (checkReceiveChat(data, userID, userRole, userAlive)) {
+                                let timeLeft = (new Date(data.state.stageEnd) - new Date(Date.now())) / 1000;
+                                timeLeft = Math.floor(timeLeft);
                                 this.chatSayMessage(chat, currentUser.id, {
                                     text: content[0].text,
                                     sender: {
                                         id: message.sender.id,
                                         name: message.sender.name
                                     }
-                                });
+                                }, timeLeft);
                             }
                         } catch (err) {
                             // console.log("receive_JSON_err", err);
@@ -198,10 +209,10 @@ module.exports = class UserInstance {
             messageLimit: 0
         }).catch(error => {
             console.log("user.subscribeToRoom error:", error);
-            convo.say(`Tham gia phòng thất bại\nuser.subscribeToRoom_error`);
+            convo.say(`ℹ️Tham gia phòng thất bại\nuser.subscribeToRoom_error`);
             convo.end();
         });
-        convo.say(`Tham gia phòng thành công!`);
+        convo.say(`ℹ️Tham gia phòng thành công!`);
         this.setRoomID(joinID, roomID);
     }
 }
