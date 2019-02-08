@@ -141,7 +141,7 @@ module.exports = class UserInstance {
                             let coupleIndex = data.players.coupleID.indexOf(userID); //user_index
                             coupleIndex = coupleIndex != -1 ? (coupleIndex == 0 ? 1 : 0) : -1; //partner_index
                             var playerList = fullList.reduce((plist, p, index) => { // chuyển sang mảng vote [id: name]
-                                plist[p] = `${userIsWolf ? (isWolf(data, p) ? "🐺" : "🎅") : ""}${coupleIndex != -1 ? "❤" : ""}${index}: ${data.players.names[p]}`;
+                                plist[p] = `${userIsWolf ? (isWolf(data, p) ? "🐺" : "🎅") : ""}${data.players.coupleID[coupleIndex] == p ? "❤" : ""}${index}: ${data.players.names[p]}`;
                                 return plist;
                             }, {});
                             this.setPlayerList(joinID, playerList); // lưu lại mạng vote
