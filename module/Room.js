@@ -19,7 +19,7 @@ module.exports = (userInstance, bot) => {
                 return count <= 10 && ++count;
             }).map((r) => {
                 let readyUserCount = Object.keys(r.players.ready).length;
-                return `${r.state.status == 'waiting'?'💤':'🎮'}${r.roomChatID}`;
+                return `${r.state.status == 'waiting' ? '💤' : '🎮'}${r.roomChatID}`;
             })
             chat.conversation((convo) => {
                 convo.ask({
@@ -38,27 +38,33 @@ module.exports = (userInstance, bot) => {
                     }
                     sendRequest(`/play/${roomID}/join/${userID}`).then(data => {
                         if (data.success) {
-                            userInstance.getInstance(joinID).joinRoom({ roomId: roomID })
-                                .then(room => {
-                                    userInstance.subscribeChat(roomID, joinID, chat, convo);
-                                    sendRequest(`/play/${roomID}/users`).then(users => {
-                                        chat.say(`PHÒNG ${roomID}\n` + users.map((u, i) => {
-                                            return `${data.ready[u.id] ? `🌟` : `☆`}${i + 1}: ${u.name}`;
-                                        }).join('\n'));
-                                    })
-                                    console.log(`${userID} Joined room with ID: ${room.id}`)
-                                    convo.end();
-                                })
-                                .catch(err => {
-                                    console.log(`${userID} Error joining room ${roomID}: ${err}`)
-                                    convo.end();
-                                })
+                            // connect chat
+                            userInstance.subscribeChat(roomID, joinID, chat, convo);
+                            // get users
+                            sendRequest(`/play/${roomID}/users`).then(users => {
+                                convo.say(`PHÒNG ${roomID}\n` + users.map((u, i) => {
+                                    return `${data.ready[u.id] ? `🌟` : `☆`}${i + 1}: ${u.name}`;
+                                }).join('\n'));
+                            }).catch(err => {
+                                console.log("ERR: get_users_error", err);
+                                convo.say("ERR: get_users_error");
+                            })
+                            // get data
+                            sendRequest(`/room/${roomID}/status`).then(data => {
+                                userInstance.setData(joinID, data);
+                            }).catch(err => {
+                                console.log("ERR: get_data_error", err);
+                                convo.say("ERR: get_data_error");
+                            })
+                            console.log(`Phòng ${roomID}: >> THAM GIA >> ${userID}`)
+                            convo.end();
                         } else {
                             convo.say(`🚫Phòng đang chơi!\nVui lòng thử lại sau!\njoin_room_err`)
                             convo.end();
                         }
                     }).catch(err => {
                         console.log(`join_room_request_err:`, err);
+                        convo.say("ERR: join_room_request_err");
                         convo.end();
                     })
                 });
