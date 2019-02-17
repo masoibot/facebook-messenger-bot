@@ -24,7 +24,7 @@ module.exports = (userInstance, bot) => {
                             convo.say({
                                 text: `Tên đăng nhập chưa được đăng kí\nBạn có muốn đăng kí?`,
                                 buttons: [
-                                    { type: 'postback', title: 'Đăng nhập với tên khác', payload: 'CONNECT' },
+                                    { type: 'postback', title: 'Đăng nhập lại', payload: 'CONNECT' },
                                     { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
                                 ]
                             });

@@ -47,9 +47,17 @@ module.exports = (userInstance, bot) => {
                             userInstance.subscribeChat(roomID, joinID, chat, convo);
                             // get users
                             sendRequest(`/play/${roomID}/users`).then(users => {
-                                convo.say(`PHÒNG ${roomID}\n` + users.map((u, i) => {
+                                let userListTxt = users.map((u, i) => {
                                     return `${data.ready[u.id] ? `🌟` : `☆`}${i + 1}: ${u.name}`;
-                                }).join('\n'));
+                                }).join('\n');
+                                convo.say({
+                                    text: `PHÒNG ${roomID}\n${userListTxt}`,
+                                    buttons: [
+                                        { type: 'postback', title: '🌟Sẵn sàng', payload: 'READY' },
+                                        { type: 'postback', title: 'Rời phòng', payload: 'LEAVE_ROOM' },
+                                        { type: 'postback', title: '▶Bắt đầu game', payload: 'START' }
+                                    ]
+                                });
                             }).catch(err => {
                                 console.log("ERR: get_users_error", err);
                                 convo.say("ERR: get_users_error");
