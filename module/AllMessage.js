@@ -6,20 +6,32 @@ module.exports = (userInstance, bot) => {
         if (data.captured) { return; }
         const joinID = payload.sender.id;
         const text = payload.message.text;
-        // check
-        if (!userInstance.getInstance(joinID)) {
-            chat.say({
-                text: `Vui lòng đăng nhập!`,
-                quickReplies: ['/login'],
-            });
-            return;
-        }
+
         var chatInstance = userInstance.getInstance(joinID);
         var data = userInstance.getData(joinID);
         var userID = userInstance.getUserID(joinID);
         var roomID = userInstance.getRoomID(joinID);
-        if (!userID || !roomID) {
-            chat.say(`Vui lòng đăng nhập và tham gia 1 phòng!`); return;
+        // check
+        if (!chatInstance || !userID) {
+            chat.say({
+                text: `Vui lòng đăng nhập!`,
+                buttons: [
+                    { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
+                    { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
+                ]
+            });
+            return;
+        }
+
+        if (!roomID) {
+            chat.say({
+                text: `Vui lòng tham gia 1 phòng!`,
+                buttons: [
+                    { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
+                    { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                ]
+            });
+            return;
         }
         // main
         if (data && data.state.status == 'ingame' && /\/(treo|tha)/.test(text)) {
@@ -60,19 +72,30 @@ module.exports = (userInstance, bot) => {
     bot.on('attachment', (payload, chat) => {
         const joinID = payload.sender.id;
         let attachment = payload.message.attachments[0];
-        // check
-        if (!userInstance.getInstance(joinID)) {
-            chat.say({
-                text: `Vui lòng đăng nhập!`,
-                quickReplies: ['/login'],
-            });
-            return;
-        }
+
         var data = userInstance.getData(joinID);
         var userID = userInstance.getUserID(joinID);
         var roomID = userInstance.getRoomID(joinID);
-        if (!userID && !roomID) {
-            chat.say(`Vui lòng đăng nhập và tham gia 1 phòng!`); return;
+        // check
+        if (!userInstance.getInstance(joinID) || !userID) {
+            chat.say({
+                text: `Vui lòng đăng nhập!`,
+                buttons: [
+                    { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
+                    { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
+                ]
+            });
+            return;
+        }
+        if (!roomID) {
+            chat.say({
+                text: `Vui lòng tham gia 1 phòng!`,
+                buttons: [
+                    { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
+                    { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                ]
+            });
+            return;
         }
         //main
         var userRole;

@@ -9,7 +9,10 @@ module.exports = (userInstance, bot) => {
         if (!userID) {
             chat.say({
                 text: `Vui lòng đăng nhập!`,
-                quickReplies: ['/login'],
+                buttons: [
+                    { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
+                    { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
+                ]
             });
             return;
         }
@@ -31,7 +34,9 @@ module.exports = (userInstance, bot) => {
                     if (!roomID) {
                         convo.say({
                             text: `🚫Bạn chưa chọn phòng nào!`,
-                            quickReplies: ["/join"]
+                            buttons: [
+                                { type: 'postback', title: 'Thử lại', payload: 'JOIN_ROOM' },
+                            ]
                         });
                         convo.end();
                         return;
@@ -59,18 +64,34 @@ module.exports = (userInstance, bot) => {
                             console.log(`Phòng ${roomID}: >> THAM GIA >> ${userID}`)
                             convo.end();
                         } else {
-                            convo.say(`🚫Phòng đang chơi!\nVui lòng thử lại sau!\njoin_room_err`)
+                            convo.say({
+                                text: `🚫Phòng đang chơi!\nVui lòng thử lại sau!\njoin_room_err`,
+                                buttons: [
+                                    { type: 'postback', title: 'Thử lại', payload: 'JOIN_ROOM' },
+                                ]
+                            });
                             convo.end();
                         }
                     }).catch(err => {
                         console.log(`join_room_request_err:`, err);
-                        convo.say("ERR: join_room_request_err");
+                        convo.say({
+                            text: "ERR: join_room_request_err",
+                            buttons: [
+                                { type: 'postback', title: 'Thử lại', payload: 'JOIN_ROOM' },
+                            ]
+                        });
                         convo.end();
                     })
                 });
             });
         }).catch(err => {
-            chat.say(`request_room_list_err:`, err);
+            chat.say({
+                text: `request_room_list_err:`,
+                buttons: [
+                    { type: 'postback', title: 'Thử lại', payload: 'JOIN_ROOM' },
+                ]
+            });
+            console.log(`request_room_list_err:`, err);
         })
     };
     bot.hear(/^\/join$/, joinCallback);
@@ -84,14 +105,31 @@ module.exports = (userInstance, bot) => {
         if (userID && roomID) {
             sendRequest(`/play/${roomID}/leave/${userID}`).then(data => {
                 if (data.success) {
-                    chat.say(`Bạn đã rời phòng chơi!`);
+                    // chat.say({
+                    //     text: `Bạn đã rời phòng chơi!`,
+                    //     buttons: [
+                    //         { type: 'postback', title: 'Tham gia phòng khác', payload: 'JOIN_ROOM' },
+                    //         { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                    //     ]
+                    // });
                     userInstance.leaveChat(joinID);
                 }
             }).catch(err => {
+                chat.say({
+                    text: `Vui lòng thử lại!\nleave_room_request_err`,
+                    buttons: [
+                        { type: 'postback', title: 'Thử lại!', payload: 'LEAVE_ROOM' },
+                    ]
+                });
                 console.log('leave_room_request_err:', err);
             })
         } else {
-            chat.say(`Bạn chưa tham gia phòng nào!`);
+            chat.say({
+                text: `Bạn chưa tham gia phòng nào!`,
+                buttons: [
+                    { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
+                ]
+            });
         }
         console.log(`${userID} leave room with ID: ${roomID}`)
     }
@@ -107,7 +145,12 @@ module.exports = (userInstance, bot) => {
         if (userID && roomID) {
             sendRequest(`/play/${roomID}/${isReady ? 'off' : 'on'}-ready/${userID}`).then(data => {
                 if (data.success) {
-                    chat.say(`Bạn đã ${isReady ? 'bỏ ' : ''}sẵn sàng!`);
+                    chat.say({
+                        text: `Bạn đã ${isReady ? 'bỏ ' : ''}sẵn sàng!`,
+                        buttons: [
+                            { type: 'postback', title: `${isReady ? 'Sẵn sàng' : 'Bỏ sẵn sàng'}`, payload: 'READY' },
+                        ]
+                    });
                     userInstance.invertReady(joinID);
                 } else {
                     chat.say(`Vui lòng thử lại!\nready_request_error`);
@@ -133,14 +176,32 @@ module.exports = (userInstance, bot) => {
         if (userID && roomID && isReady) {
             sendRequest(`/play/${roomID}/start`).then(data => {
                 if (!data.success) {
-                    chat.say(`${data.message}!\nstart_game_error`);
+                    chat.say({
+                        text: `Không thể bắt đầu chơi\n${data.message}!\nstart_game_error`,
+                        buttons: [
+                            { type: 'postback', title: 'Thử lại!', payload: 'START' },
+                        ]
+                    });
                 }
             }).catch(err => {
-                chat.say(`Vui lòng thử lại!\nstart_request_error`);
+                chat.say({
+                    text: `Vui lòng thử lại!\nstart_request_error`,
+                    buttons: [
+                        { type: 'postback', title: 'Thử lại!', payload: 'START' },
+                    ]
+                });
                 console.log('ready_request_error:', err);
             })
         } else {
-            chat.say(`Bạn không thể bắt đầu game!\nBạn phải /ready trước!\nnot_login_join_or_ready_error`);
+            chat.say({
+                text: `Bạn không thể bắt đầu game!\nBạn phải đăng nhập, tham gia 1 phòng và sẵn sàng trước!\nnot_login_join_or_ready_error`,
+                buttons: [
+                    { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
+                    { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
+                    { type: 'postback', title: 'Sẵn sàng', payload: 'READY' },
+                    { type: 'postback', title: 'Thử lại!', payload: 'START' },
+                ]
+            });
         }
         console.log(`${userID} start roomID: ${roomID}`);
     }

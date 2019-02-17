@@ -62,7 +62,13 @@ module.exports = class UserInstance {
         return newChatMgr.connect({
             onRemovedFromRoom: room => {
                 console.log("kicked out room");
-                chat.say(`Bạn đã rời khỏi phòng chơi!`);
+                chat.say({
+                    text: `Bạn đã rời phòng chơi!`,
+                    buttons: [
+                        { type: 'postback', title: 'Tham gia phòng khác', payload: 'JOIN_ROOM' },
+                        { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                    ]
+                });
                 this.setRoomID(joinID, undefined);
                 this.leaveChat();
             }
@@ -82,7 +88,7 @@ module.exports = class UserInstance {
         if (isNaN(timeLeft) || timeLeft < 0) return "";
         var minute = Math.floor(timeLeft / 60);
         var second = timeLeft % 60;
-        return `[${minute > 0 ? `${minute}:` : "0:"}${second < 10 ? `0${second}` : `${second}`}] `;
+        return `[⏱${minute > 0 ? `${minute}:` : "0:"}${second < 10 ? `0${second}` : `${second}`}] `;
     }
     chatSayMessage(chat, userID, message, timeLeft = -1) {
         if (message.sender.id !== userID) {
@@ -105,7 +111,13 @@ module.exports = class UserInstance {
     subscribeChat(roomID, joinID, chat, convo) {
         var currentUser = this.getInstance(joinID);
         if (!currentUser) {
-            chat.say(`Vui lòng đăng nhập!\nsubcribe_error_not_connected`);
+            chat.say({
+                text: `Vui lòng đăng nhập!\nsubcribe_error_not_connected`,
+                buttons: [
+                    { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
+                    { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
+                ]
+            });
             return;
         }
         if (this.getRoomID(joinID)) {
@@ -128,9 +140,18 @@ module.exports = class UserInstance {
                             let action = res.action;
                             let text = res.text;
                             if (action == "ready") {
-                                chat.say(`PHÒNG ${roomID}\n` + Object.keys(data.players.ready).map((u, i) => {
+                                let userListTxt = Object.keys(data.players.ready).map((u, i) => {
                                     return `${data.players.ready[u] ? `🌟` : `☆`}${i + 1}: ${data.players.names[u]}`;
-                                }).join("\n"));
+                                }).join("\n");
+                                chat.say({
+                                    text: `PHÒNG ${roomID}\n${userListTxt}`,
+                                    buttons: [
+                                        { type: 'postback', title: '🌟Sẵn sàng', payload: 'READY' },
+                                        { type: 'postback', title: 'Rời phòng', payload: 'LEAVE_ROOM' },
+                                        { type: 'postback', title: '▶Bắt đầu game', payload: 'START' },
+                                        { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                                    ]
+                                });
                                 return;
                             }
                             this.setData(joinID, data); // lưu gameData
@@ -154,7 +175,7 @@ module.exports = class UserInstance {
                             }
                         } catch (e) {
                             console.log(e);
-                            convo.say(`MÀN HÌNH XANH HIỆN LÊN\nJSON_invalid_error`);
+                            convo.say(`MÀN HÌNH XANH HIỆN LÊN\nLiên hệ ngay admin về lỗi này!\nJSON_invalid_error`);
                         }
                     } else if (message.text[0] === '[') {
                         try {//is voteList from other
@@ -220,7 +241,12 @@ module.exports = class UserInstance {
             messageLimit: 0
         }).catch(error => {
             console.log("user.subscribeToRoom error:", error);
-            convo.say(`ℹ️Tham gia phòng thất bại\nuser.subscribeToRoom_error`);
+            convo.say({
+                text: `ℹ️Tham gia phòng thất bại\nuser.subscribeToRoom_error`,
+                buttons: [
+                    { type: 'postback', title: 'Thử lại', payload: 'JOIN_ROOM' },
+                ]
+            });
             convo.end();
         });
         convo.say(`ℹ️Tham gia phòng thành công!`);

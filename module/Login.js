@@ -12,15 +12,21 @@ module.exports = (userInstance, bot) => {
                     userInstance.connectChat(userID, joinID, chat).then(currentUser => {
                         console.log(`Login: ${userID}`);
                         convo.say({
-                            text: `Bạn đã đăng nhập thành công!\nHãy /join 1 phòng chơi!`,
-                            quickReplies: ["/join"]
+                            text: `Bạn đã đăng nhập thành công!\nHãy tham gia 1 phòng chơi!`,
+                            buttons: [
+                                { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
+                                { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                            ]
                         });
                         convo.end();
                     }).catch(error => {
                         if (error.info && error.info.error && error.info.error == "services/chatkit/not_found/user_not_found") {
                             convo.say({
                                 text: `Tên đăng nhập chưa được đăng kí\nBạn có muốn đăng kí?`,
-                                quickReplies: ["/register"]
+                                buttons: [
+                                    { type: 'postback', title: 'Đăng nhập với tên khác', payload: 'CONNECT' },
+                                    { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
+                                ]
                             });
                             convo.end();
                             return;
@@ -28,7 +34,10 @@ module.exports = (userInstance, bot) => {
                         console.log("chatMgr.connect error:", error.info.error);
                         convo.say({
                             text: `Đăng nhập thất bại\nchatMgr.connect_err`,
-                            quickReplies: ["/login"]
+                            buttons: [
+                                { type: 'postback', title: 'Đăng nhập lại', payload: 'CONNECT' },
+                                { type: 'postback', title: 'Đăng kí', payload: 'REGISTER' }
+                            ]
                         });
                         convo.end();
                     })
@@ -45,7 +54,7 @@ module.exports = (userInstance, bot) => {
         if (currentUser) {
             await currentUser.disconnect();
             userInstance.setInstance(joinID, null);
-            chat.say(`Bạn đã ngắt kết nối!`);
+            chat.say(`Bạn đã đăng xuất thành công!`);
         } else {
             chat.say(`Bạn chưa đăng nhập!`);
         }
@@ -64,15 +73,28 @@ module.exports = (userInstance, bot) => {
                             if (data.success) {
                                 convo.say({
                                     text: `Bạn đã đăng kí thành công!\nVui lòng đăng nhập!`,
-                                    quickReplies: ["/login", "/tải_app"]
+                                    buttons: [
+                                        { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
+                                        { type: 'postback', title: 'Tải app cho android', payload: 'DOWNLOAD_APP' }
+                                    ]
                                 })
                                 convo.end();
                             } else {
-                                convo.say(`Vui lòng thử lại!\nregister_error`);
+                                convo.say({
+                                    text: `Vui lòng thử lại với tên khác!`,
+                                    buttons: [
+                                        { type: 'postback', title: 'Thử lại', payload: 'REGISTER' }
+                                    ]
+                                })
                                 convo.end();
                             }
                         }).catch(err => {
-                            convo.say(`Vui lòng thử lại!\nregister_request_error`);
+                            convo.say({
+                                text: `Vui lòng thử lại!\nregister_request_error`,
+                                buttons: [
+                                    { type: 'postback', title: 'Thử lại', payload: 'REGISTER' }
+                                ]
+                            })
                             convo.end();
                         })
                     });
