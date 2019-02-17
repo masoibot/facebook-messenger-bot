@@ -148,8 +148,7 @@ module.exports = class UserInstance {
                                     buttons: [
                                         { type: 'postback', title: '🌟Sẵn sàng', payload: 'READY' },
                                         { type: 'postback', title: 'Rời phòng', payload: 'LEAVE_ROOM' },
-                                        { type: 'postback', title: '▶Bắt đầu game', payload: 'START' },
-                                        { type: 'postback', title: 'Đăng xuất', payload: 'DISCONNECT' }
+                                        { type: 'postback', title: '▶Bắt đầu game', payload: 'START' }
                                     ]
                                 });
                                 return;
@@ -249,7 +248,6 @@ module.exports = class UserInstance {
             });
             convo.end();
         });
-        convo.say(`ℹ️Tham gia phòng thành công!`);
         this.setRoomID(joinID, roomID);
     }
 }

@@ -196,7 +196,6 @@ module.exports = (userInstance, bot) => {
             chat.say({
                 text: `Bạn không thể bắt đầu game!\nBạn phải đăng nhập, tham gia 1 phòng và sẵn sàng trước!\nnot_login_join_or_ready_error`,
                 buttons: [
-                    { type: 'postback', title: 'Đăng nhập', payload: 'CONNECT' },
                     { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
                     { type: 'postback', title: 'Sẵn sàng', payload: 'READY' },
                     { type: 'postback', title: 'Thử lại!', payload: 'START' },
