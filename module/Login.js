@@ -54,6 +54,9 @@ module.exports = (userInstance, bot) => {
         if (currentUser) {
             await currentUser.disconnect();
             userInstance.setInstance(joinID, null);
+            userInstance.setData(joinID, null);
+            userInstance.setUserID(joinID, null);
+            userInstance.setRoomID(joinID, null);
             chat.say(`Bạn đã đăng xuất thành công!`);
         } else {
             chat.say(`Bạn chưa đăng nhập!`);
