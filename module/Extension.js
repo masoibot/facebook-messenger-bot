@@ -41,7 +41,7 @@ module.exports = (userInstance, bot) => {
                 "type": "web_url",
                 "url": `https://phamngocduy98.github.io/masoibot/setup?roomID=${roomID}`,
                 "title": "Set-up ngay",
-                "webview_height_ratio": "compact",
+                "webview_height_ratio": "full",
                 "messenger_extensions": true,
                 "fallback_url": `https://phamngocduy98.github.io/masoibot/setup?roomID=${roomID}`,
                 "webview_share_button": "hide"

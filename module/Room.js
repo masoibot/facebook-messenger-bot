@@ -212,10 +212,39 @@ module.exports = (userInstance, bot) => {
         }
         console.log(`${userID} start roomID: ${roomID}`);
     }
-    bot.hear(/^\/start$/, startCallback);
-    bot.on('postback:START', startCallback);
+    bot.hear(/^\/autostart$/, startCallback);
+    bot.on('postback:AUTO_START', startCallback);
 
     //start
+    const startPromptCallback = (payload, chat) => {
+        const joinID = payload.sender.id;
+        let userID = userInstance.getUserID(joinID);
+        let roomID = userInstance.getRoomID(joinID);
+        let isReady = userInstance.getReady(joinID);
+        if (userID && roomID && isReady) {
+            chat.say({
+                text: `Chọn cách set-up vai trò:`,
+                buttons: [
+                    { type: 'postback', title: 'Tự động', payload: 'AUTO_START' },
+                    { type: 'postback', title: 'Thủ công', payload: 'SETUP' },
+                ]
+            });
+        } else {
+            chat.say({
+                text: `Bạn không thể bắt đầu game!\nBạn phải đăng nhập, tham gia 1 phòng và sẵn sàng trước!\nnot_login_join_or_ready_error`,
+                buttons: [
+                    { type: 'postback', title: 'Tham gia phòng chơi', payload: 'JOIN_ROOM' },
+                    { type: 'postback', title: 'Sẵn sàng', payload: 'READY' },
+                    { type: 'postback', title: 'Thử lại!', payload: 'START' },
+                ]
+            });
+        }
+        console.log(`${userID} start roomID: ${roomID}`);
+    }
+    bot.hear(/^\/start$/, startPromptCallback);
+    bot.on('postback:START', startPromptCallback);
+
+    //vote
     const voteCallback = (payload, chat) => {
         const joinID = payload.sender.id;
         let userID = userInstance.getUserID(joinID);
