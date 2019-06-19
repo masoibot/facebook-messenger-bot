@@ -8,7 +8,7 @@ const { window } = new JSDOM();
 global.window = window;
 global.navigator = {};
 const bot = new BootBot({
-    accessToken: 'EAALw2mSPrm4BADklo8ZA9HoDAV0olXjSLGr8oZCMYlhMosQIDxZCAolTeqdr6nQ8cawguKmmdf5ZApkymhh0GqqpqkX8sQKaZCGbAA0ZAOcImJIVbfg6aJS5xIOjjB7JrMQeLovsamN15P7GmDPAl9F64VjqLOs8YgdJ6vcuZAajPFNpLyWd2mG',
+    accessToken: 'EAALw2mSPrm4BABZCSeoZBkYrbYzkTK0fnXZAx0syvy2Vzz0S4txA8mh0EqWqe5q33ZCfyJmZCOGDHTaOCEey8HDZC5pX1EfJjqO7wDIRKtAFbhPTKgLGZBPrhP2ldzNu9y5PRBtlu5xuXXacl5pK8p1bbDuhHw88yO1WbtAKku2ssV1ELtUaMQ6',
     verifyToken: 'bautroixa',
     appSecret: '9baffe75afd171b99ce7f7053a0a2340'
 });
